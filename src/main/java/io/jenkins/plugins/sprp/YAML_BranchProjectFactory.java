@@ -39,7 +39,7 @@ import java.io.IOException;
 /**
  * Recognizes and builds {@code Jenkinsfile}.
  */
-public class WorkflowBranchProjectFactory extends org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory {
+public class YAML_BranchProjectFactory extends org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory {
     static final String SCRIPT = "Jenkins.yaml";
     private String scriptPath = SCRIPT;
 
@@ -51,7 +51,7 @@ public class WorkflowBranchProjectFactory extends org.jenkinsci.plugins.workflow
     }
 
     @DataBoundConstructor
-    public WorkflowBranchProjectFactory() { }
+    public YAML_BranchProjectFactory() { }
 
     @DataBoundSetter
     public void setScriptPath(String scriptPath) {

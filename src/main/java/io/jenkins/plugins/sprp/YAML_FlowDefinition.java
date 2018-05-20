@@ -41,16 +41,10 @@ public class YAML_FlowDefinition extends FlowDefinition {
     @Override
     public FlowExecution create(FlowExecutionOwner owner, TaskListener listener,
                                           List<? extends Action> actions) throws Exception {
-        String script = "pipeline {" +
-                        "    agent any" +
-                        "" +
-                        "    stages {" +
-                        "        stage('Hello') {" +
-                        "            steps {" +
-                        "                echo 'Hello..'" +
-                        "            }" +
-                        "        }" +
-                        "    }" +
+        String script = "node {\n" +
+                        "    stage('Example') {\n" +
+                        "            echo 'Done Cloning'\n" +
+                        "    }\n" +
                         "}";
 
         listener.getLogger().format(script);

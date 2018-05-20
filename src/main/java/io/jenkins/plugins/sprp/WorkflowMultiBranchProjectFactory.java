@@ -32,7 +32,7 @@ import jenkins.scm.api.SCMSourceCriteria;
 import org.apache.commons.lang.StringUtils;
 //import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory;
 //import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowMultiBranchProjectFactory;
-//import org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory;
+//import org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory;
 //import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -40,15 +40,15 @@ import org.kohsuke.stapler.DataBoundSetter;
 import java.io.IOException;
 
 /**
- * Defines organization folders by {@link WorkflowBranchProjectFactory}.
+ * Defines organization folders by {@link YAML_BranchProjectFactory}.
  */
 public class WorkflowMultiBranchProjectFactory
         extends org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory {
-    private String scriptPath = WorkflowBranchProjectFactory.SCRIPT;
+    private String scriptPath = YAML_BranchProjectFactory.SCRIPT;
 
     public Object readResolve() {
         if (this.scriptPath == null) {
-            this.scriptPath = WorkflowBranchProjectFactory.SCRIPT;
+            this.scriptPath = YAML_BranchProjectFactory.SCRIPT;
         }
         return this;
     }
@@ -56,7 +56,7 @@ public class WorkflowMultiBranchProjectFactory
     @DataBoundSetter
     public void setScriptPath(String scriptPath) {
         if (StringUtils.isEmpty(scriptPath)) {
-            this.scriptPath = WorkflowBranchProjectFactory.SCRIPT;
+            this.scriptPath = YAML_BranchProjectFactory.SCRIPT;
         } else {
             this.scriptPath = scriptPath;
         }
@@ -72,13 +72,13 @@ public class WorkflowMultiBranchProjectFactory
     }
 
     private org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory newProjectFactory() {
-        WorkflowBranchProjectFactory workflowBranchProjectFactory = new WorkflowBranchProjectFactory();
+        YAML_BranchProjectFactory workflowBranchProjectFactory = new YAML_BranchProjectFactory();
         workflowBranchProjectFactory.setScriptPath(scriptPath);
         return workflowBranchProjectFactory;
     }
 
     private SCMSourceCriteria newProjectFactorySCMSourceCriteria(SCMSource source) {
-        WorkflowBranchProjectFactory workflowBranchProjectFactory = new WorkflowBranchProjectFactory();
+        YAML_BranchProjectFactory workflowBranchProjectFactory = new YAML_BranchProjectFactory();
         workflowBranchProjectFactory.setScriptPath(scriptPath);
         return workflowBranchProjectFactory.getSCMSourceCriteria(source);
     }
@@ -91,7 +91,7 @@ public class WorkflowMultiBranchProjectFactory
         }
 
         @Override public String getDisplayName() {
-            return "Pipeline " + WorkflowBranchProjectFactory.SCRIPT;
+            return "Pipeline " + YAML_BranchProjectFactory.SCRIPT;
         }
 
     }
