@@ -42,7 +42,7 @@ import java.io.IOException;
 /**
  * Defines organization folders by {@link YAML_BranchProjectFactory}.
  */
-public class WorkflowMultiBranchProjectFactory
+public class YAML_MultiBranchProjectFactory
         extends org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory {
     private String scriptPath = YAML_BranchProjectFactory.SCRIPT;
 
@@ -65,7 +65,7 @@ public class WorkflowMultiBranchProjectFactory
     public String getScriptPath() { return scriptPath; }
 
     @DataBoundConstructor
-    public WorkflowMultiBranchProjectFactory() { }
+    public YAML_MultiBranchProjectFactory() { }
 
     @Override protected SCMSourceCriteria getSCMSourceCriteria(SCMSource source) {
         return newProjectFactorySCMSourceCriteria(source);

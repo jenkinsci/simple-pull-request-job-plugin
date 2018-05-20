@@ -2,11 +2,12 @@ package io.jenkins.plugins.sprp;
 
 import hudson.Extension;
 import hudson.Functions;
-import hudson.model.*;
+import hudson.model.TaskListener;
+import hudson.model.Action;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import jenkins.branch.Branch;
-import jenkins.scm.api.*;
+//import jenkins.scm.api.;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
@@ -47,7 +48,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
                         "    }\n" +
                         "}";
 
-        listener.getLogger().format(script);
+        listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
     }
 
@@ -56,7 +57,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         @Nonnull
         @Override public String getDisplayName() {
-            return "YAML configuration for multibranch pipeline";
+            return Messages.YAML_FlowDefinition.DescriptorImpl.DisplayName();
         }
     }
 }
