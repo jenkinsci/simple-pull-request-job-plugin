@@ -57,7 +57,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         @Nonnull
         @Override public String getDisplayName() {
-            return Messages.YAML_FlowDefinition.DescriptorImpl.DisplayName();
+            return Messages.YAML_FlowDefinition_DescriptorImpl_DisplayName();
         }
     }
 }
