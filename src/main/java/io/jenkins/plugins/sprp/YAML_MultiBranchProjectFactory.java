@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 CloudBees, Inc.
+ * Copyright 2015-2018 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 //import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowMultiBranchProjectFactory;
 //import org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory;
 //import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
@@ -41,9 +42,9 @@ import java.io.IOException;
 
 /**
  * Defines organization folders by {@link YAML_BranchProjectFactory}.
+ * Original code: org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory
  */
-public class YAML_MultiBranchProjectFactory
-        extends org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory {
+public class YAML_MultiBranchProjectFactory extends WorkflowMultiBranchProjectFactory {
     private String scriptPath = YAML_BranchProjectFactory.SCRIPT;
 
     public Object readResolve() {

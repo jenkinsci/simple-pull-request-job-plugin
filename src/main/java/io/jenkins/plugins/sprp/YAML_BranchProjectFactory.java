@@ -1,7 +1,7 @@
 /*
  * The MIT License
- * Orignal class: org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory
- * Copyright 2018 CloudBees, Inc.
+ *
+ * Copyright 2015-2018 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,17 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
+import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.IOException;
 
 /**
- * Recognizes and builds {@code Jenkinsfile}.
+ * Recognizes and builds {@code Jenkins.yaml}.
+ * Original code: org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory
  */
-public class YAML_BranchProjectFactory extends org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory {
+public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
     static final String SCRIPT = "Jenkins.yaml";
     private String scriptPath = SCRIPT;
 
