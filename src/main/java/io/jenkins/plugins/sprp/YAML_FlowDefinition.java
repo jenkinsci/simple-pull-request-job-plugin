@@ -1,15 +1,9 @@
 package io.jenkins.plugins.sprp;
 
-import hudson.Extension;
-import hudson.Functions;
-import hudson.model.TaskListener;
-import hudson.model.Action;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import jenkins.branch.Branch;
-//import jenkins.scm.api.;
+import hudson.*;
+import hudson.model.*;
 import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.URIish;
+import org.jenkinsci.plugins.gitclient.CloneCommand;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
 import org.jenkinsci.plugins.gitclient.Git;
 import org.jenkinsci.plugins.gitclient.GitClient;
@@ -22,11 +16,9 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
-
+//import hudson.plugins.xshell.XShellBuilder;
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,20 +40,22 @@ public class YAML_FlowDefinition extends FlowDefinition {
     @Override
     public FlowExecution create(FlowExecutionOwner owner, TaskListener listener,
                                           List<? extends Action> actions) throws Exception {
-        String script = "";
+        Queue.Executable exec = owner.getExecutable();
+        if (!(exec instanceof WorkflowRun)) {
+            throw new IllegalStateException("inappropriate context");
+        }
+        WorkflowRun build = (WorkflowRun) exec;
 
-        listener.getLogger().println(script);
+        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
 
-        GitClient git = Git.with(listener, ((WorkflowRun) owner.getExecutable()).getParent().getCharacteristicEnvVars())
-                .in(owner.getRootDir().getAbsoluteFile())
-                .getClient();
-        git.addRemoteUrl("origin", "https://github.com/gautamabhishek46/dummy.git");
-        FetchCommand gitFetch= git.fetch_();
-        ArrayList<RefSpec> refSpecs = new ArrayList<>();
-//        refSpecs.add(new RefSpec().setSource("https://github.com/gautamabhishek46/dummy.git"));
-        refSpecs.add(new RefSpec().setSourceDestination("master", "master"));
-        gitFetch.from(new URIish("https://github.com/gautamabhishek46/dummy.git"), null).execute();
-        return new CpsFlowExecution(script, false, owner);
+
+        GitOperations gitOperations = new GitOperations(file, listener,
+                build.getCharacteristicEnvVars(), "https://github.com/jenkinsci/simple-pull-request-job-plugin");
+        if(gitOperations.pullChangesOfPullrequest(4, "master"))
+            listener.getLogger().println("PR is successfully fetched and checkout");
+        else
+            listener.getLogger().println("PR is not successfully fetched and checkout");
+        return new CpsFlowExecution("", false, owner);
     }
 
     @Extension
