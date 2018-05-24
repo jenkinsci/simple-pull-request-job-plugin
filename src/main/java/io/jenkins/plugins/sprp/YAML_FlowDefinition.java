@@ -51,11 +51,25 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         GitOperations gitOperations = new GitOperations(file, listener,
                 build.getCharacteristicEnvVars(), "https://github.com/jenkinsci/simple-pull-request-job-plugin");
-        if(gitOperations.pullChangesOfPullrequest(4, "master"))
-            listener.getLogger().println("PR is successfully fetched and checkout");
-        else
-            listener.getLogger().println("PR is not successfully fetched and checkout");
-        return new CpsFlowExecution("", false, owner);
+//        gitOperations.deleteBranch("DUMMY_8DD2963");
+//        gitOperations.printRevisions();
+//        if(gitOperations.pullChangesOfPullrequest(4, "master"))
+//            listener.getLogger().println("PR is successfully fetched and checkout");
+//        else
+//            listener.getLogger().println("PR is not successfully fetched and checkout");
+
+        String script = "pipeline {\n" +
+                "    agent any\n" +
+                "    stages {\n" +
+                "        stage('Example') {\n" +
+                "            steps {\n" +
+                "                echo 'Hello World'\n" +
+                "\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        return new CpsFlowExecution(script, false, owner);
     }
 
     @Extension
