@@ -38,11 +38,11 @@ import org.kohsuke.stapler.DataBoundSetter;
 import java.io.IOException;
 
 /**
- * Recognizes and builds {@code Jenkins.yaml}.
+ * Recognizes and builds {@code Jenkinsfile.yaml}.
  * Original code: org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory
  */
 public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
-    static final String SCRIPT = "Jenkins.yaml";
+    static final String SCRIPT = "Jenkinsfile.yaml";
     private String scriptPath = SCRIPT;
 
     public Object readResolve() {

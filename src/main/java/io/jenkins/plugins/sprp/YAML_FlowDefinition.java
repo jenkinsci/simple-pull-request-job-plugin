@@ -54,13 +54,13 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
     public Object readResolve() {
         if (this.scriptPath == null) {
-            this.scriptPath = "Jenkins.yaml";
+            this.scriptPath = "Jenkinsfile.yaml";
         }
         return this;
     }
 
     public YAML_FlowDefinition(String scriptPath) {
-        this.scriptPath = "Jenkins.yaml";
+        this.scriptPath = "Jenkinsfile.yaml";
     }
 
     @Override
