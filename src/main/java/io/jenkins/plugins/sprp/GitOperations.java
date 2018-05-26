@@ -2,13 +2,17 @@ package io.jenkins.plugins.sprp;
 
 import hudson.EnvVars;
 import hudson.model.TaskListener;
-import hudson.triggers.SCMTrigger;
-import org.codehaus.groovy.runtime.callsite.DummyCallSite;
 import hudson.plugins.git.Branch;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
-import org.jenkinsci.plugins.gitclient.*;
+import org.jenkinsci.plugins.gitclient.Git;
+import org.jenkinsci.plugins.gitclient.GitClient;
+import org.jenkinsci.plugins.gitclient.CloneCommand;
+import org.jenkinsci.plugins.gitclient.CheckoutCommand;
+import org.jenkinsci.plugins.gitclient.FetchCommand;
+import org.jenkinsci.plugins.gitclient.MergeCommand;
+import org.jenkinsci.plugins.gitclient.PushCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,13 +20,12 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 public class GitOperations {
-    File workspace;
-    TaskListener listener;
-    EnvVars envVars;
-    String url;
-    GitClient git;
-
-    final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
+    private final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
+    private File workspace;
+    private TaskListener listener;
+    private EnvVars envVars;
+    private String url;
+    private GitClient git;
 
     public GitOperations(File workspace, TaskListener listener, EnvVars envVars, String url) throws IOException, InterruptedException {
         this.workspace = workspace;
@@ -56,18 +59,18 @@ public class GitOperations {
 
     public boolean cloneTheRepo(String branch) {
         CloneCommand clone = git.clone_();
-        ArrayList<RefSpec> refSpecs = new ArrayList<>();;
+        ArrayList<RefSpec> refSpecs = new ArrayList<>();
         clone.url(url);
 
-//        if (branch != null && !branch.equals("")){
-//
-//            refSpecs.add(new RefSpec().setSourceDestination(branch, branch));
-//            clone.refspecs(refSpecs);
-//        }
+        if (branch != null && !branch.equals("")) {
+            refSpecs.add(new RefSpec()
+                    .setSourceDestination("+refs/heads/" + branch, "refs/remotes/origin/" + branch));
+            clone.refspecs(refSpecs);
+        }
 
-        try{
+        try {
             clone.execute();
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             listener.getLogger().println("Error while cloning branch " + branch + "from " + url);
             listener.getLogger().println(e.getMessage());
             return false;
@@ -81,22 +84,20 @@ public class GitOperations {
         FetchCommand fetch = git.fetch_();
         ArrayList<RefSpec> rfs = new ArrayList<>();
 
-        if (branch != null && !branch.equals("")){
+        if (branch != null && !branch.equals("")) {
             rfs.add(new RefSpec().setSourceDestination(branch, branch));
         }
 
-
-
         fetch.prune(true);
 
-        try{
+        try {
             fetch.from(new URIish(this.url), rfs);
             fetch.execute();
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             listener.getLogger().println("Error while fetching branch from " + url);
             listener.getLogger().println(e.getMessage());
             return false;
-        }catch (URISyntaxException e){
+        } catch (URISyntaxException e) {
             listener.getLogger().println("Invalid repository url");
             return false;
         }
@@ -106,29 +107,24 @@ public class GitOperations {
     }
 
     public boolean checkout(String branch) {
-//        CheckoutCommand checkoutCommand = git.checkout();
-//        checkoutCommand.branch(branch);
-//
-//
-//        try {
-//            checkoutCommand.execute();
-//        }catch (InterruptedException e){
-//            listener.getLogger().println("Error while checkout to branch " + branch);
-//            listener.getLogger().println(e.getMessage());
-//            return false;
-//        }
-//
-//        listener.getLogger().println("Cloned branch " + branch + " successfully.");
+        CheckoutCommand checkoutCommand = git.checkout();
+        checkoutCommand.branch(branch);
+        checkoutCommand.ref(getObjectIdOfLocalBranch(branch).name());
+
         try {
-            git.checkout(branch);
+            checkoutCommand.execute();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            listener.getLogger().println("Error while checkout to branch " + branch);
+            listener.getLogger().println(e.getMessage());
+            return false;
         }
+
+        listener.getLogger().println("Cloned branch " + branch + " successfully.");
         return true;
     }
 
     public boolean pullChangesOfPullrequest(int PR_Number, String branch) throws InterruptedException {
-        if(!cloneTheRepo(branch))
+        if (!cloneTheRepo(branch))
             return false;
 
         FetchCommand fetchCommand = git.fetch_();
@@ -136,27 +132,27 @@ public class GitOperations {
         ArrayList<RefSpec> refSpecs = new ArrayList<>();
         refSpecs.add(new RefSpec().setSourceDestination("pull/" + PR_Number + "/head", DUMMY_BRANCH_NAME));
 
-        try{
+        try {
             fetchCommand.from(new URIish(this.url), refSpecs);
             fetchCommand.execute();
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             listener.getLogger().println("Error while fetching from " + url);
             listener.getLogger().println(e.getMessage());
             return false;
-        }catch (URISyntaxException e){
+        } catch (URISyntaxException e) {
             listener.getLogger().println("Invalid repository url");
             return false;
         }
 
         listener.getLogger().println("Fetched successfully.");
         printRevisions();
-        if(!merge(getObjectIdOfBranch(DUMMY_BRANCH_NAME).name()))
+        if (!merge(Objects.requireNonNull(getObjectIdOfLocalBranch(DUMMY_BRANCH_NAME)).name()))
             return false;
 
-        return checkout(branch);
+        return deleteBranch(DUMMY_BRANCH_NAME);
     }
 
-    public boolean merge(String rev) throws InterruptedException {
+    public boolean merge(String rev) {
         listener.getLogger().println("Merging started with rev " + rev + ".");
         MergeCommand mergeCommand = git.merge();
         mergeCommand.setRevisionToMerge(ObjectId.fromString(rev));
@@ -165,9 +161,9 @@ public class GitOperations {
 
         printRevisions();
 
-        try{
+        try {
             mergeCommand.execute();
-        }catch (InterruptedException e){
+        } catch (InterruptedException e) {
             listener.getLogger().println("Error while merging.");
             listener.getLogger().println(e.getMessage());
             return false;
@@ -176,7 +172,7 @@ public class GitOperations {
         return true;
     }
 
-    public boolean deleteBranch(String branch){
+    private boolean deleteBranch(String branch) {
         try {
             git.deleteBranch(branch);
             return true;
@@ -186,31 +182,56 @@ public class GitOperations {
         }
     }
 
-    private String extractObjectIdFromBranch(String branch){
+    private boolean push() {
+        PushCommand pushCommand = git.push();
+        try {
+            pushCommand.to(new URIish(this.url));
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        pushCommand.force(true);
+//        pushCommand
+
+        return true;
+    }
+
+    private String extractObjectIdFromBranch(String branch) {
         String objectId;
         int branchLen = branch.length();
         objectId = branch.substring(branchLen - 41, branchLen - 1);
         return objectId;
     }
 
-    private ObjectId getObjectIdOfBranch(String branch){
+    private ObjectId getObjectIdOfLocalBranch(String branch) {
         try {
-            ArrayList<Branch> branches = (ArrayList<Branch>) git.getBranchesContaining(branch,false);
-            listener.getLogger().println("Number of branches: " + branch.length());
-            if(branches.size() > 1) {
+            Set<Branch> allBranches = (Set<Branch>) git.getBranches();
+
+            ArrayList<Branch> branches = new ArrayList<Branch>();
+
+            for (Branch b : allBranches) {
+                if (b.toString().contains(branch)) {
+                    System.out.println("found: " + b.toString());
+                    branches.add(b);
+                }
+            }
+
+            listener.getLogger().println("Number of branches: " + branches.size());
+
+            if (branches.size() > 1) {
                 listener.getLogger().println("Branch length is greater than 1");
-                for (Branch b: branches) {
+                for (Branch b : branches) {
                     listener.getLogger().print("  - " + b.toString() + " : ");
                     listener.getLogger().println(extractObjectIdFromBranch(b.toString()));
                 }
                 return null;
+            } else if (branches.size() == 1)
+                return ObjectId.fromString(extractObjectIdFromBranch(branches.get(0).toString()));
+            else {
+                listener.getLogger().println("Cannot find a branch with name : " + branch);
+                return null;
             }
-
-            for (Branch b: branches) {
-                return ObjectId.fromString(extractObjectIdFromBranch(b.toString()));
-            }
-            listener.getLogger().println("Cannot find a branch with name : " + branch);
-            return null;
         } catch (InterruptedException e) {
             e.printStackTrace();
             listener.getLogger().println("Error while getting ObjectId of branch : " + branch);
@@ -218,11 +239,11 @@ public class GitOperations {
         }
     }
 
-    private void printRevisions(){
+    private void printRevisions() {
         try {
-            ArrayList<Branch> branchs = (ArrayList<Branch>) git.getBranchesContaining(DUMMY_BRANCH_NAME,false);
+            Set<Branch> branchs = (Set<Branch>) git.getBranches();
             listener.getLogger().println("List of branches: ");
-            for (Branch b: branchs) {
+            for (Branch b : branchs) {
                 listener.getLogger().print("  - " + b.toString() + " : ");
                 listener.getLogger().println(extractObjectIdFromBranch(b.toString()));
             }
@@ -235,7 +256,7 @@ public class GitOperations {
         try {
             Set<String> rfnames = git.getRefNames("");
             listener.getLogger().println("List of references: ");
-            for (String b: rfnames) {
+            for (String b : rfnames) {
                 listener.getLogger().println("  - " + b);
             }
         } catch (InterruptedException e) {
@@ -245,7 +266,7 @@ public class GitOperations {
         try {
             HashMap<String, ObjectId> headrevs = (HashMap<String, ObjectId>) git.getHeadRev(this.url);
             listener.getLogger().println("Head Revisions");
-            for (Map.Entry<String, ObjectId> e:headrevs.entrySet()) {
+            for (Map.Entry<String, ObjectId> e : headrevs.entrySet()) {
                 listener.getLogger().println("  - " + e.getKey() + " : " + e.getValue().name());
             }
         } catch (InterruptedException e) {

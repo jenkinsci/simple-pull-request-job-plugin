@@ -1,7 +1,12 @@
 package io.jenkins.plugins.sprp;
 
+import com.cloudbees.plugins.credentials.Credentials;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.*;
 import hudson.model.*;
+import org.acegisecurity.Authentication;
 import org.eclipse.jgit.transport.RefSpec;
 import org.jenkinsci.plugins.gitclient.CloneCommand;
 import org.jenkinsci.plugins.gitclient.FetchCommand;
@@ -42,7 +47,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
                                           List<? extends Action> actions) throws Exception {
         Queue.Executable exec = owner.getExecutable();
         if (!(exec instanceof WorkflowRun)) {
-            throw new IllegalStateException("inappropriate context");
+            throw new IllegalStateException("inappropriat   e context");
         }
         WorkflowRun build = (WorkflowRun) exec;
 
@@ -53,10 +58,10 @@ public class YAML_FlowDefinition extends FlowDefinition {
                 build.getCharacteristicEnvVars(), "https://github.com/jenkinsci/simple-pull-request-job-plugin");
 //        gitOperations.deleteBranch("DUMMY_8DD2963");
 //        gitOperations.printRevisions();
-//        if(gitOperations.pullChangesOfPullrequest(4, "master"))
-//            listener.getLogger().println("PR is successfully fetched and checkout");
-//        else
-//            listener.getLogger().println("PR is not successfully fetched and checkout");
+        if(gitOperations.pullChangesOfPullrequest(4, "master"))
+            listener.getLogger().println("PR is successfully fetched and checkout");
+        else
+            listener.getLogger().println("PR is not successfully fetched and checkout");
 
         String script = "pipeline {\n" +
                 "    agent any\n" +
