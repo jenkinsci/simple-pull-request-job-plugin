@@ -24,32 +24,18 @@
 
 package io.jenkins.plugins.sprp;
 
-import com.cloudbees.plugins.credentials.Credentials;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.*;
-import hudson.model.*;
-import org.acegisecurity.Authentication;
-import org.eclipse.jgit.transport.RefSpec;
-import org.jenkinsci.plugins.gitclient.CloneCommand;
-import org.jenkinsci.plugins.gitclient.FetchCommand;
-import org.jenkinsci.plugins.gitclient.Git;
-import org.jenkinsci.plugins.gitclient.GitClient;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import hudson.Extension;
+import hudson.model.TaskListener;
+import hudson.model.Action;
+import hudson.model.Queue;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
-import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-//import hudson.plugins.xshell.XShellBuilder;
 import javax.annotation.Nonnull;
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
@@ -79,19 +65,25 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 
         GitOperations gitOperations = new GitOperations(file, listener,
-                build.getCharacteristicEnvVars(), "https://github.com/jenkinsci/simple-pull-request-job-plugin");
+                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
 //        gitOperations.deleteBranch("DUMMY_8DD2963");
 //        gitOperations.printRevisions();
-        if(gitOperations.pullChangesOfPullrequest(4, "master"))
-            listener.getLogger().println("PR is successfully fetched and checkout");
-        else
-            listener.getLogger().println("PR is not successfully fetched and checkout");
+//        if(gitOperations.pullChangesOfPullrequest(4, "master"))
+//            listener.getLogger().println("PR is successfully fetched and checkout");
+//        else
+//            listener.getLogger().println("PR is not successfully fetched and checkout");
+//        if(gitOperations.push())
+//            System.out.println("Push successful.");
+//        else
+//            System.out.println("Cannot push");
+
 
         String script = "pipeline {\n" +
                 "    agent any\n" +
                 "    stages {\n" +
                 "        stage('Example') {\n" +
                 "            steps {\n" +
+                "                checkout scm \n" +
                 "                echo 'Hello World'\n" +
                 "\n" +
                 "            }\n" +

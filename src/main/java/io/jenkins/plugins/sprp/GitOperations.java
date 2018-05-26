@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import hudson.EnvVars;
 import hudson.model.TaskListener;
 import hudson.plugins.git.Branch;
@@ -26,12 +27,14 @@ public class GitOperations {
     private EnvVars envVars;
     private String url;
     private GitClient git;
+    private String currentBranch;
 
     public GitOperations(File workspace, TaskListener listener, EnvVars envVars, String url) throws IOException, InterruptedException {
         this.workspace = workspace;
         this.envVars = envVars;
         this.listener = listener;
         this.url = url;
+        this.currentBranch = null;
 
         initialiseGitClient();
     }
@@ -55,6 +58,14 @@ public class GitOperations {
     public void setWorkspace(File workspace) throws IOException, InterruptedException {
         this.workspace = workspace;
         initialiseGitClient();
+    }
+
+    public String getCurrentBranch() {
+        return currentBranch;
+    }
+
+    private void setCurrentBranch(String currentBranch) {
+        this.currentBranch = currentBranch;
     }
 
     public boolean cloneTheRepo(String branch) {
@@ -120,6 +131,7 @@ public class GitOperations {
         }
 
         listener.getLogger().println("Cloned branch " + branch + " successfully.");
+        setCurrentBranch(branch);
         return true;
     }
 
@@ -182,8 +194,9 @@ public class GitOperations {
         }
     }
 
-    private boolean push() {
+    public boolean push() {
         PushCommand pushCommand = git.push();
+        currentBranch = "master";
         try {
             pushCommand.to(new URIish(this.url));
         } catch (URISyntaxException e) {
@@ -191,10 +204,23 @@ public class GitOperations {
             return false;
         }
 
+        pushCommand.ref(currentBranch);
         pushCommand.force(true);
-//        pushCommand
 
+        try {
+            pushCommand.execute();
+        } catch (InterruptedException e) {
+            listener.getLogger().println("Error while pushing the branch " + currentBranch);
+            e.printStackTrace();
+            return false;
+        }
+
+        listener.getLogger().println("Branch " + currentBranch + " pushed successfully.");
         return true;
+    }
+
+    public void setUsernameAndPasswordCredential(StandardUsernameCredentials cred){
+        git.setCredentials(cred);
     }
 
     private String extractObjectIdFromBranch(String branch) {
