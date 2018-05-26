@@ -114,5 +114,4 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
         }
 
     }
-
 }

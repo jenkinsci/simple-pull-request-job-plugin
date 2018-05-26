@@ -25,28 +25,17 @@
 package io.jenkins.plugins.sprp;
 
 import hudson.Extension;
-import hudson.Functions;
 import hudson.model.TaskListener;
 import hudson.model.Action;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import jenkins.branch.Branch;
-//import jenkins.scm.api.;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import hudson.model.Queue;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
-import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
-
 import javax.annotation.Nonnull;
-import java.io.IOException;
+import java.io.File;
 import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
@@ -66,13 +55,41 @@ public class YAML_FlowDefinition extends FlowDefinition {
     @Override
     public FlowExecution create(FlowExecutionOwner owner, TaskListener listener,
                                           List<? extends Action> actions) throws Exception {
-        String script = "node {\n" +
-                        "    stage('Example') {\n" +
-                        "            echo 'Done Cloning'\n" +
-                        "    }\n" +
-                        "}";
+        Queue.Executable exec = owner.getExecutable();
+        if (!(exec instanceof WorkflowRun)) {
+            throw new IllegalStateException("inappropriat   e context");
+        }
+        WorkflowRun build = (WorkflowRun) exec;
 
-        listener.getLogger().println(script);
+//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
+//
+//
+//        GitOperations gitOperations = new GitOperations(file, listener,
+//                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
+//        gitOperations.deleteBranch("DUMMY_8DD2963");
+//        gitOperations.printRevisions();
+//        if(gitOperations.pullChangesOfPullrequest(4, "master"))
+//            listener.getLogger().println("PR is successfully fetched and checkout");
+//        else
+//            listener.getLogger().println("PR is not successfully fetched and checkout");
+//        if(gitOperations.push())
+//            System.out.println("Push successful.");
+//        else
+//            System.out.println("Cannot push");
+
+
+        String script = "pipeline {\n" +
+                "    agent any\n" +
+                "    stages {\n" +
+                "        stage('Example') {\n" +
+                "            steps {\n" +
+                "                checkout scm \n" +
+                "                echo 'Hello World'\n" +
+                "\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
         return new CpsFlowExecution(script, false, owner);
     }
 
