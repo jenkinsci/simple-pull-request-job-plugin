@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015-2018 CloudBees, Inc.
+ * Copyright 2015-2018 CloudBees, Inc, Abhishek Gautam (@gautamabhishek46).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,11 @@ import org.kohsuke.stapler.DataBoundSetter;
 import java.io.IOException;
 
 /**
- * Recognizes and builds {@code Jenkins.yaml}.
- * Original code: org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory
+ * Recognizes and builds {@code Jenkinsfile.yaml}.
+ * Original code: org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory
  */
 public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
-    static final String SCRIPT = "Jenkins.yaml";
+    static final String SCRIPT = "Jenkinsfile.yaml";
     private String scriptPath = SCRIPT;
 
     public Object readResolve() {
