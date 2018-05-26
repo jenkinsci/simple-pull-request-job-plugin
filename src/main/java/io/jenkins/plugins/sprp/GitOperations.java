@@ -21,7 +21,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 public class GitOperations {
-    private final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
+    private static final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
     private File workspace;
     private TaskListener listener;
     private EnvVars envVars;

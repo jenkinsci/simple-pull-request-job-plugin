@@ -61,11 +61,11 @@ public class YAML_FlowDefinition extends FlowDefinition {
         }
         WorkflowRun build = (WorkflowRun) exec;
 
-        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
-
-
-        GitOperations gitOperations = new GitOperations(file, listener,
-                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
+//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
+//
+//
+//        GitOperations gitOperations = new GitOperations(file, listener,
+//                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
 //        gitOperations.deleteBranch("DUMMY_8DD2963");
 //        gitOperations.printRevisions();
 //        if(gitOperations.pullChangesOfPullrequest(4, "master"))
