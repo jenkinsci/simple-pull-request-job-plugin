@@ -39,7 +39,7 @@ import java.io.IOException;
 
 /**
  * Recognizes and builds {@code Jenkinsfile.yaml}.
- * Original code: org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory
+ * Original code: org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory
  */
 public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
     static final String SCRIPT = "Jenkinsfile.yaml";
