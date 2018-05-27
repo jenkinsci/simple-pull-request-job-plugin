@@ -81,21 +81,27 @@ public class YAML_FlowDefinition extends FlowDefinition {
 //            System.out.println("Cannot push");
 
 
-        String script = "pipeline {\n" +
-                        "    agent any\n" +
-                        "    stages {\n" +
-                        "        stage('Example') {\n" +
-                        "            steps {\n" +
-                        "                checkout scm \n" +
-                        "                echo 'Hello World'\n" +
-                        "                isUnix{\n" +
-                        "                    sh 'ls'\n" +
-                        "                }\n" +
-                        "                \n" +
-                        "            }\n" +
-                        "        }\n" +
-                        "    }\n" +
-                        "}";
+        String script = ""; // +
+//                "pipeline {\n" +
+//                "\tagent any\n" +
+//                "\tstages {\n" +
+//                "\t\tstage('Example') {\n" +
+//                "\t\t\tsteps {\n" +
+//                "\t\t\t\tcheckout scm \n" +
+//                "\t\t\t\techo 'Hello World'\n" +
+//                "\t\t\t\tscript {\n" +
+//                "\t\t\t\t\tif (isUnix()) {\n" +
+//                "\t\t\t\t\t\tsh 'echo \"This is UNIX\"'\n" +
+//                "\t\t\t\t\t} else {\n" +
+//                "\t\t\t\t\t\tsh 'echo \"This is not UNIX\"'\n" +
+//                "\t\t\t\t\t}\n" +
+//                "\t\t\t\t}\n" +
+//                "\t\t\t}\n" +
+//                "\t\t}\n" +
+//                "\t}\n" +
+//                "}";
+//        script = new YamlToPipeline().generatepipeline();
+        listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
     }
 
