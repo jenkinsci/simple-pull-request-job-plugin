@@ -24,19 +24,20 @@
 
 package io.jenkins.plugins.sprp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.model.TaskListener;
 import hudson.model.Action;
 import hudson.model.Queue;
+import hudson.model.TaskListener;
+import java.io.File;
+import java.util.List;
+import javax.annotation.Nonnull;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
@@ -59,9 +60,11 @@ public class YAML_FlowDefinition extends FlowDefinition {
         if (!(exec instanceof WorkflowRun)) {
             throw new IllegalStateException("inappropriat   e context");
         }
-        WorkflowRun build = (WorkflowRun) exec;
 
-//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
+//        WorkflowRun build = (WorkflowRun) exec;
+
+//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/" +
+//                "simple-pull-request-job-plugin/work/workspacece");
 //
 //
 //        GitOperations gitOperations = new GitOperations(file, listener,
@@ -79,23 +82,27 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 
         String script = "pipeline {\n" +
-                "    agent any\n" +
-                "    stages {\n" +
-                "        stage('Example') {\n" +
-                "            steps {\n" +
-                "                checkout scm \n" +
-                "                echo 'Hello World'\n" +
-                "\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }\n" +
-                "}";
+                        "    agent any\n" +
+                        "    stages {\n" +
+                        "        stage('Example') {\n" +
+                        "            steps {\n" +
+                        "                checkout scm \n" +
+                        "                echo 'Hello World'\n" +
+                        "                isUnix{\n" +
+                        "                    sh 'ls'\n" +
+                        "                }\n" +
+                        "                \n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}";
         return new CpsFlowExecution(script, false, owner);
     }
 
     @Extension
     public static class DescriptorImpl extends FlowDefinitionDescriptor {
 
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         @Nonnull
         @Override public String getDisplayName() {
             return Messages.YAML_FlowDefinition_DescriptorImpl_DisplayName();

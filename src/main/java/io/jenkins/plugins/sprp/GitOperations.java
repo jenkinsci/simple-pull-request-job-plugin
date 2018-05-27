@@ -196,7 +196,7 @@ public class GitOperations {
 
     public boolean push() {
         PushCommand pushCommand = git.push();
-        currentBranch = "master";
+
         try {
             pushCommand.to(new URIish(this.url));
         } catch (URISyntaxException e) {
@@ -246,7 +246,7 @@ public class GitOperations {
             listener.getLogger().println("Number of branches: " + branches.size());
 
             if (branches.size() > 1) {
-                listener.getLogger().println("Branch length is greater than 1");
+                listener.getLogger().println("More than one branches found containing " + branch);
                 for (Branch b : branches) {
                     listener.getLogger().print("  - " + b.toString() + " : ");
                     listener.getLogger().println(extractObjectIdFromBranch(b.toString()));
@@ -265,6 +265,8 @@ public class GitOperations {
         }
     }
 
+
+    //TODO: This function needs to be removed before publishing.
     private void printRevisions() {
         try {
             Set<Branch> branchs = (Set<Branch>) git.getBranches();
