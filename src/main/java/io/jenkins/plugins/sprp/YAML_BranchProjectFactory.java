@@ -50,6 +50,7 @@ import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.CheckForNull;
 import java.io.IOException;
+import java.util.Collections;
 
 import static hudson.Util.fixEmpty;
 
@@ -156,7 +157,7 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
                             item,
                             StandardUsernameCredentials.class,
 //                            URIRequirementBuilder.fromUri(remote).build(),
-                            null,
+                            Collections.emptyList(),
                             GitClient.CREDENTIALS_MATCHER)
                     .includeCurrentValue(credentialsId);
         }
