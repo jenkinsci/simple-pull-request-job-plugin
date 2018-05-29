@@ -13,22 +13,20 @@ public class PipelineSnippetGenerator {
     }
 
     public String shellScritp(ArrayList<String> paths){
-        String snippet = "";
-        snippet = "script {\n" +
-                "\tif (isUnix()) {\n";
+        StringBuilder snippet;
+        snippet = new StringBuilder("script {\n" + "\tif (isUnix()) {\n");
 
         for(String p: paths)
-            snippet += "\t\tsh '"+ p + ".sh" + "'\n";
+            snippet.append("\t\tsh '").append(p).append(".sh").append("'\n");
 
-        snippet += "\t} else {\n";
+        snippet.append("\t} else {\n");
 
         for(String p: paths)
-            snippet += "\t\tbat '"+ p + ".bat" + "'\n";
+            snippet.append("\t\tbat '").append(p).append(".bat").append("'\n");
 
-        snippet += "\t}\n" +
-                "}\n";
+        snippet.append("\t}\n" + "}\n");
 
-        return snippet;
+        return snippet.toString();
 
     }
 
@@ -109,21 +107,21 @@ public class PipelineSnippetGenerator {
     }
 
     public String getArchiveArtifactsSnippet(ArrayList<String> paths){
-        String snippet = "";
+        StringBuilder snippet = new StringBuilder();
 
         for(String p: paths)
-            snippet += "archiveArtifacts artifacts: '" + p + "'\n";
+            snippet.append("archiveArtifacts artifacts: '").append(p).append("'\n");
 
-        return snippet;
+        return snippet.toString();
     }
 
     public String getPublishReportSnippet(ArrayList<String> paths){
-        String snippet = "";
+        StringBuilder snippet = new StringBuilder();
 
         for(String p: paths)
-            snippet += "junit '" + p + "'\n";
+            snippet.append("junit '").append(p).append("'\n");
 
-        return snippet;
+        return snippet.toString();
     }
 
     public String getStage(
@@ -187,19 +185,19 @@ public class PipelineSnippetGenerator {
         if(config == null)
             return "";
 
-        String snippet = "stage('Publish Artifact') {\n";
+        StringBuilder snippet = new StringBuilder("stage('Publish Artifact') {\n");
 
-        snippet += "\tsteps {\n";
-        snippet += "\t\t" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {\n";
+        snippet.append("\tsteps {\n");
+        snippet.append("\t\t" + "withCredentials([file(credentialsId: '").append(config.getCredentialId()).append("', variable: 'FILE')]) {\n");
 
         for(HashMap<String, String> artifact: publishArtifacts){
-            snippet += "\t\t\tsh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'\n";
+            snippet.append("\t\t\tsh 'scp -i $FILE ").append(artifact.get("from")).append(" ").append(config.getUser()).append("@").append(config.getHost()).append(":").append(artifact.get("to")).append("'\n");
         }
 
-        snippet += "\t\t}\n";
-        snippet += "\t}\n";
-        snippet += "}\n";
+        snippet.append("\t\t}\n");
+        snippet.append("\t}\n");
+        snippet.append("}\n");
 
-        return snippet;
+        return snippet.toString();
     }
 }

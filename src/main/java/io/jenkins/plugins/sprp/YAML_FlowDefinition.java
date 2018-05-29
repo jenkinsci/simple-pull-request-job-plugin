@@ -59,7 +59,6 @@ import static hudson.Util.fixEmpty;
 
 public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
-    private String credentialId;
 
     public Object readResolve() {
         if (this.scriptPath == null) {
@@ -70,7 +69,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
     public YAML_FlowDefinition(String scriptPath) {
         this.scriptPath = scriptPath;
-        this.credentialId = "dummyGitRepo";
     }
 
     @Override
@@ -81,8 +79,8 @@ public class YAML_FlowDefinition extends FlowDefinition {
             throw new IllegalStateException("inappropriat   e context");
         }
 
-        WorkflowRun build = (WorkflowRun) exec;
-        WorkflowJob job = build.getParent();
+//        WorkflowRun build = (WorkflowRun) exec;
+//        WorkflowJob job = build.getParent();
 
 //        String script = ""  +
 //                "pipeline {\n" +
@@ -124,7 +122,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 
         YamlToPipeline y = new YamlToPipeline();
-        String script = y.generatepipeline(listener);
+        String script = y.generatepipeline(this.scriptPath, listener);
 
 //        StandardCredentials c = CredentialsMatchers.firstOrNull(
 //                        CredentialsProvider.lookupCredentials(

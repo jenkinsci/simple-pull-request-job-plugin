@@ -12,40 +12,37 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class YamlToPipeline {
-    public String generatepipeline(TaskListener listener){
-        String script;
+    public String generatepipeline(String yamlScriptPath, TaskListener listener){
+        StringBuilder script;
         final String newLine = "\n";
         int numberOfTabs = 0;
 
-        YamlPipeline yamlPipeline = loadYaml(listener);
+        YamlPipeline yamlPipeline = loadYaml(yamlScriptPath, listener);
 
         if(yamlPipeline == null)
             return "";
 
         PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
 
-        script = "pipeline {\n";
+        script = new StringBuilder("pipeline {\n");
         numberOfTabs++;
 
         // Adding outer agent
-        script += psg.getTabString(numberOfTabs)
-                + "agent " + psg.addTabs(psg.getAgent(yamlPipeline.getAgent()), numberOfTabs);
+        script.append(psg.getTabString(numberOfTabs)).append("agent ").append(psg.addTabs(psg.getAgent(yamlPipeline.getAgent()), numberOfTabs));
 
         // Stages begin
-        script += "\tstages {" + newLine;
+        script.append("\tstages {" + newLine);
         numberOfTabs++;
 
         for(Stage stage: yamlPipeline.getStages()){
-            script += psg.getTabString(numberOfTabs) +
-                    psg.addTabs(psg.getStage(stage,
-                            yamlPipeline.getBuildResultPaths(),
-                            yamlPipeline.getTestResultPaths(),
-                            yamlPipeline.getArchiveArtifacts()), numberOfTabs);
+            script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getStage(stage,
+                    yamlPipeline.getBuildResultPaths(),
+                    yamlPipeline.getTestResultPaths(),
+                    yamlPipeline.getArchiveArtifacts()), numberOfTabs));
         }
 
-        script += psg.getTabString(numberOfTabs) +
-                psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
-                        yamlPipeline.getPublishArtifacts()), numberOfTabs);
+        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
+                yamlPipeline.getPublishArtifacts()), numberOfTabs));
 
 //        Below code is for stage generation
 //        script += psg.getTabString(numberOfTabs) + "stage(Example) {" + newLine;
@@ -58,19 +55,18 @@ public class YamlToPipeline {
 
         // Stages end
         numberOfTabs--;
-        script += "\t}\n";
+        script.append("\t}\n");
         numberOfTabs--;
-        script += "}";
+        script.append("}");
 
-        return script;
+        return script.toString();
     }
 
-    public YamlPipeline loadYaml(TaskListener listener){
+    public YamlPipeline loadYaml(String yamlSctiptPath, TaskListener listener){
         Yaml yaml = new Yaml();
-        try (InputStream in = new FileInputStream("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/Jenkinsfile.yaml")) {
+        try (InputStream in = new FileInputStream(yamlSctiptPath)) {
             YamlPipeline yamlPipeline = yaml.loadAs(in, YamlPipeline.class);
 
-            ObjectMapper mapper = new ObjectMapper();
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));
 
