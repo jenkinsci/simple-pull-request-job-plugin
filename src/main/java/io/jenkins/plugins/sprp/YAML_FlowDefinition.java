@@ -86,7 +86,13 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 //        String script = ""  +
 //                "pipeline {\n" +
-//                "\tagent any\n" +
+//                "\tagent {\n" +
+//                "\t\tnode {\n" +
+//                "\t\t\tlabel 'my-defined-label'\n" +
+//                "\t\t\tcustomWorkspace '/some/other/path'\n" +
+//                "\t\t}\n" +
+//                "\t\tdocker 'maven:3-alpine'\n" +
+//                "\t}\n" +
 //                "\tstages {\n" +
 //                "\t\tstage('Example') {\n" +
 //                "\t\t\tsteps {\n" +
@@ -118,6 +124,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 
         YamlToPipeline y = new YamlToPipeline();
+        String script = y.generatepipeline(listener);
 
 //        StandardCredentials c = CredentialsMatchers.firstOrNull(
 //                        CredentialsProvider.lookupCredentials(
@@ -139,7 +146,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
 //        else
 //            System.out.println("Cannot push");
 
-        String script = y.generatepipeline(listener);
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
     }

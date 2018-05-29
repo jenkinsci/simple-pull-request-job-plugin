@@ -1,6 +1,5 @@
 package io.jenkins.plugins.sprp;
 
-import com.iwombat.util.StringUtil;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
@@ -46,6 +45,21 @@ public class PipelineSnippetGenerator {
         return StringUtils.repeat("\t", number);
     }
 
+    private String getCommonOptionsOfAgent(Agent agent){
+        String snippet = "";
+
+        if (agent.getLabel() != null)
+            snippet += "label '" + agent.getLabel() + "'\n";
+
+        if (agent.getCustomWorkspace() != null)
+            snippet += "customWorkspace '" + agent.getCustomWorkspace() + "'\n";
+
+        if (agent.getDockerfile() != null || agent.getDockerImage() != null)
+            snippet += "reuseNode " + agent.getReuseNode() + "\n";
+
+        return snippet;
+    }
+
     //TODO: Change to support full specs
     public String getAgent(Agent agent){
         String snippet = "";
@@ -54,15 +68,41 @@ public class PipelineSnippetGenerator {
             snippet = "any\n";
         }
         else {
-            snippet += "{\n" +
-                    "\tnode{\n" +
-                    "\t\tlabel '" + agent.getLable() + "'\n";
+            if(agent.getDockerImage() != null){
+                snippet += "{\n";
+                snippet += "\tdocker {\n";
+                snippet += "\t\timage '" + agent.getDockerImage() + "'\n";
 
-            if (agent.getCustomWorkspace() != null)
-                snippet += "\t\tcustomWorkspace '" + agent.getLable() + "'\n";
+                if (agent.getArgs() != null)
+                    snippet += "\t\targs '" + agent.getArgs() + "'\n";
 
-            snippet += "\t}\n" +
-                    "}\n";
+                snippet += "\t\talwaysPull " + agent.getAlwaysPull() + "\n";
+                snippet += "\t\t" + addTabs(getCommonOptionsOfAgent(agent), 2);
+                snippet += "\t}\n";
+                snippet += "}\n";
+            }
+            else if(agent.getDockerfile() != null){
+                snippet += "{\n";
+                snippet += "\tdockerfile {\n";
+                snippet += "\t\tfilename '" + agent.getDockerfile() + "'\n";
+
+                if (agent.getDir() != null)
+                    snippet += "\t\tdir '" + agent.getDir() + "'\n";
+
+                if (agent.getArgs() != null)
+                    snippet += "\t\tadditionalBuildArgs '" + agent.getArgs() + "'\n";
+
+                snippet += "\t\t" + addTabs(getCommonOptionsOfAgent(agent), 2);
+                snippet += "\t}\n";
+                snippet += "}\n";
+            }
+            else {
+                snippet += "{\n";
+                snippet += "\tnode{\n";
+                snippet += "\t\t" + addTabs(getCommonOptionsOfAgent(agent), 2);
+                snippet += "\t}\n";
+                snippet += "}\n";
+            }
         }
 
         return snippet;
