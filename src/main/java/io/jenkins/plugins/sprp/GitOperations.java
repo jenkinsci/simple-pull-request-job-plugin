@@ -28,6 +28,7 @@ public class GitOperations {
     private String url;
     private GitClient git;
     private String currentBranch;
+    private String currentBranchSHA1;
 
     public GitOperations(File workspace, TaskListener listener, EnvVars envVars, String url) throws IOException, InterruptedException {
         this.workspace = workspace;
@@ -120,7 +121,8 @@ public class GitOperations {
     public boolean checkout(String branch) {
         CheckoutCommand checkoutCommand = git.checkout();
         checkoutCommand.branch(branch);
-        checkoutCommand.ref(getObjectIdOfLocalBranch(branch).name());
+        String tempCurrentBranchSHA1 = getObjectIdOfLocalBranch(branch).name();
+        checkoutCommand.ref(currentBranchSHA1);
 
         try {
             checkoutCommand.execute();
@@ -132,6 +134,7 @@ public class GitOperations {
 
         listener.getLogger().println("Cloned branch " + branch + " successfully.");
         setCurrentBranch(branch);
+        currentBranchSHA1 = tempCurrentBranchSHA1;
         return true;
     }
 
@@ -238,8 +241,21 @@ public class GitOperations {
 
             for (Branch b : allBranches) {
                 if (b.toString().contains(branch)) {
-                    System.out.println("found: " + b.toString());
+//                    System.out.println("found: " + b.toString());
                     branches.add(b);
+                }
+            }
+
+            if(branches.size() > 1) {
+                allBranches.clear();
+                allBranches.addAll(branches);
+                branches.clear();
+
+                for (Branch b : allBranches) {
+                    if (!b.toString().contains("remotes")) {
+                        System.out.println("found: " + b.toString());
+                        branches.add(b);
+                    }
                 }
             }
 

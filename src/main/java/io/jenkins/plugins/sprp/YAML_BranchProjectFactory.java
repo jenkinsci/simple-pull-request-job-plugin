@@ -24,18 +24,34 @@
 
 package io.jenkins.plugins.sprp;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import hudson.Extension;
+import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.model.TaskListener;
+import hudson.model.queue.Tasks;
+import hudson.security.ACL;
+import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import jenkins.scm.api.SCMProbeStat;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import org.apache.commons.lang.StringUtils;
+import org.jenkinsci.plugins.gitclient.GitClient;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory;
+import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
+import javax.annotation.CheckForNull;
 import java.io.IOException;
+
+import static hudson.Util.fixEmpty;
 
 /**
  * Recognizes and builds {@code Jenkinsfile.yaml}.
@@ -44,6 +60,7 @@ import java.io.IOException;
 public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
     static final String SCRIPT = "Jenkinsfile.yaml";
     private String scriptPath = SCRIPT;
+    private String credentialsId;
 
     public Object readResolve() {
         if (this.scriptPath == null) {
@@ -54,6 +71,16 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
 
     @DataBoundConstructor
     public YAML_BranchProjectFactory() { }
+
+    @DataBoundSetter
+    public void setCredentialsId(@CheckForNull String credentialsId) {
+        System.out.println("Credential id = " + credentialsId);
+        this.credentialsId = fixEmpty(credentialsId);
+    }
+
+    public String getCredentialsId() {
+        return this.credentialsId;
+    }
 
     @DataBoundSetter
     public void setScriptPath(String scriptPath) {
@@ -69,6 +96,7 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
     }
 
     @Override protected FlowDefinition createDefinition() {
+        System.out.println("Credential id = " + credentialsId);
         return new YAML_FlowDefinition(scriptPath);
     }
 
@@ -108,6 +136,30 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
 
     @Extension
     public static class DescriptorImpl extends AbstractWorkflowBranchProjectFactoryDescriptor {
+        public ListBoxModel doFillCredentialsIdItems(@AncestorInPath Item item,
+                                                     @QueryParameter String credentialsId) {
+            StandardListBoxModel result = new StandardListBoxModel();
+            if (item == null) {
+                if (!Jenkins.getActiveInstance().hasPermission(Jenkins.ADMINISTER)) {
+                    return result.includeCurrentValue(credentialsId);
+                }
+            } else {
+                if (!item.hasPermission(Item.EXTENDED_READ)
+                        && !item.hasPermission(CredentialsProvider.USE_ITEM)) {
+                    return result.includeCurrentValue(credentialsId);
+                }
+            }
+            return result
+                    .includeEmptyValue()
+                    .includeMatchingAs(
+                            item instanceof Queue.Task ? Tasks.getAuthenticationOf((Queue.Task)item) : ACL.SYSTEM,
+                            item,
+                            StandardUsernameCredentials.class,
+//                            URIRequirementBuilder.fromUri(remote).build(),
+                            null,
+                            GitClient.CREDENTIALS_MATCHER)
+                    .includeCurrentValue(credentialsId);
+        }
 
         @Override public String getDisplayName() {
             return "by " + SCRIPT;

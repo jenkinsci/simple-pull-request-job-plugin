@@ -91,6 +91,11 @@
             <version>2.13</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.21</version>
+        </dependency>
         <!--<dependency>-->
             <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
             <!--<artifactId>workflow-api</artifactId>-->
@@ -126,6 +131,16 @@
             <artifactId>git-client</artifactId>
             <version>2.7.2</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.3</version>
         </dependency>
     </dependencies>
 

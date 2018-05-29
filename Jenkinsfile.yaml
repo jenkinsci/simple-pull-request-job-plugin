@@ -1,0 +1,34 @@
+gitCredentialId: dummyGitRepo
+artifactPublishingConfig:
+    host: 192.32.52.12
+    user: user53
+    credentialId: dummyGitRepo
+
+#buildResultPaths:
+#    - path-1
+#    - path-2
+
+#testResultPaths:
+#    - path-1
+#    - path-2
+
+stages:
+    - name: First
+      scripts:
+        -   ./scripts/hello
+    - name: Build
+      scripts:
+        -   ./scripts/hello
+    - name: Tests
+      scripts:
+        -   ./scripts/hello
+
+archiveArtifacts:
+    - Jenkinsfile.yaml
+    - scripts/hello.sh
+
+publishArtifacts:
+    - from: Jenkinsfile.yaml
+      to: ~/archives
+    - from: scripts/hello.sh
+      to: ~/archives

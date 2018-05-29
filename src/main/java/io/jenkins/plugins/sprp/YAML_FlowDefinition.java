@@ -24,23 +24,42 @@
 
 package io.jenkins.plugins.sprp;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardCredentials;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.model.Action;
-import hudson.model.Queue;
-import hudson.model.TaskListener;
+import hudson.model.*;
+
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.List;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+
+import hudson.model.queue.Tasks;
+import hudson.security.ACL;
+import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+
+import static hudson.Util.fixEmpty;
 
 public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
+    private String credentialId;
 
     public Object readResolve() {
         if (this.scriptPath == null) {
@@ -50,7 +69,8 @@ public class YAML_FlowDefinition extends FlowDefinition {
     }
 
     public YAML_FlowDefinition(String scriptPath) {
-        this.scriptPath = "Jenkinsfile.yaml";
+        this.scriptPath = scriptPath;
+        this.credentialId = "dummyGitRepo";
     }
 
     @Override
@@ -61,27 +81,10 @@ public class YAML_FlowDefinition extends FlowDefinition {
             throw new IllegalStateException("inappropriat   e context");
         }
 
-//        WorkflowRun build = (WorkflowRun) exec;
+        WorkflowRun build = (WorkflowRun) exec;
+        WorkflowJob job = build.getParent();
 
-//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/" +
-//                "simple-pull-request-job-plugin/work/workspacece");
-//
-//
-//        GitOperations gitOperations = new GitOperations(file, listener,
-//                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
-//        gitOperations.deleteBranch("DUMMY_8DD2963");
-//        gitOperations.printRevisions();
-//        if(gitOperations.pullChangesOfPullrequest(4, "master"))
-//            listener.getLogger().println("PR is successfully fetched and checkout");
-//        else
-//            listener.getLogger().println("PR is not successfully fetched and checkout");
-//        if(gitOperations.push())
-//            System.out.println("Push successful.");
-//        else
-//            System.out.println("Cannot push");
-
-
-        String script = ""; // +
+//        String script = ""  +
 //                "pipeline {\n" +
 //                "\tagent any\n" +
 //                "\tstages {\n" +
@@ -89,6 +92,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 //                "\t\t\tsteps {\n" +
 //                "\t\t\t\tcheckout scm \n" +
 //                "\t\t\t\techo 'Hello World'\n" +
+//                "\t\t\t\tarchiveArtifacts includes: './Jenkinsfile.yaml', excludes: 'sdf, iiit, cxc'\n" +
 //                "\t\t\t\tscript {\n" +
 //                "\t\t\t\t\tif (isUnix()) {\n" +
 //                "\t\t\t\t\t\tsh 'echo \"This is UNIX\"'\n" +
@@ -101,6 +105,41 @@ public class YAML_FlowDefinition extends FlowDefinition {
 //                "\t}\n" +
 //                "}";
 //        script = new YamlToPipeline().generatepipeline();
+
+//        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
+//
+//
+//        GitOperations gitOperations = new GitOperations(file, listener,
+//                build.getCharacteristicEnvVars(), "https://github.com/gautamabhishek46/dummy");
+
+//        listener.getLogger().println("Credential id = " + this.credentialId);
+//        listener.getLogger().println("Credential id = " + new YAML_BranchProjectFactory().getCredentialsId());
+//        listener.getLogger().println("script path = " + new YAML_BranchProjectFactory().getScriptPath());
+
+
+        YamlToPipeline y = new YamlToPipeline();
+
+//        StandardCredentials c = CredentialsMatchers.firstOrNull(
+//                        CredentialsProvider.lookupCredentials(
+//                                StandardCredentials.class,
+//                                job,
+//                                Tasks.getAuthenticationOf((Queue.Task)job)),
+//                CredentialsMatchers.withId(y.loadYaml(listener).getGitCredentialId())
+//        );
+//        gitOperations.setUsernameAndPasswordCredential((StandardUsernameCredentials)c);
+
+//        gitOperations.checkout("master");
+//        gitOperations.cloneTheRepo("master");
+//        PrintWriter writer = new PrintWriter("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace/Readme.md", "UTF-8");
+//        writer.println("The first line");
+//        writer.println("The second line");
+//        writer.close();
+//        if(gitOperations.push())
+//            System.out.println("Push successful.");
+//        else
+//            System.out.println("Cannot push");
+
+        String script = y.generatepipeline(listener);
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
     }
