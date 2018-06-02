@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class YamlToPipeline {
-    public String generatepipeline(String yamlScriptPath, TaskListener listener){
+    public String generatePipeline(String yamlScriptPath, TaskListener listener){
         StringBuilder script;
         final String newLine = "\n";
         int numberOfTabs = 0;
@@ -62,9 +62,9 @@ public class YamlToPipeline {
         return script.toString();
     }
 
-    public YamlPipeline loadYaml(String yamlSctiptPath, TaskListener listener){
+    public YamlPipeline loadYaml(String yamlScriptPath, TaskListener listener){
         Yaml yaml = new Yaml();
-        try (InputStream in = new FileInputStream(yamlSctiptPath)) {
+        try (InputStream in = new FileInputStream(yamlScriptPath)) {
             YamlPipeline yamlPipeline = yaml.loadAs(in, YamlPipeline.class);
 
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();

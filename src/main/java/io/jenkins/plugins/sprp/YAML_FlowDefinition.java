@@ -24,38 +24,19 @@
 
 package io.jenkins.plugins.sprp;
 
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardCredentials;
-import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
-import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.*;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
-import hudson.model.queue.Tasks;
-import hudson.security.ACL;
-import hudson.util.ListBoxModel;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.kohsuke.stapler.AncestorInPath;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
-
-import static hudson.Util.fixEmpty;
 
 public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
@@ -108,7 +89,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 //                "\t\t}\n" +
 //                "\t}\n" +
 //                "}";
-//        script = new YamlToPipeline().generatepipeline();
+//        script = new YamlToPipeline().generatePipeline();
 
 //        File file = new File("/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/work/workspace");
 //
@@ -122,7 +103,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
 
         YamlToPipeline y = new YamlToPipeline();
-        String script = y.generatepipeline(this.scriptPath, listener);
+        String script = y.generatePipeline(this.scriptPath, listener);
 
 //        StandardCredentials c = CredentialsMatchers.firstOrNull(
 //                        CredentialsProvider.lookupCredentials(
