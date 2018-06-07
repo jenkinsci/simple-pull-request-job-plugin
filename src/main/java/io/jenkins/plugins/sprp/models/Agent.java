@@ -1,7 +1,5 @@
 package io.jenkins.plugins.sprp.models;
 
-// TODO: add dockerfile support
-
 public class Agent {
     private String label;
     private String customWorkspace;

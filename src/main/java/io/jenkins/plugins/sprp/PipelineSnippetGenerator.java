@@ -58,7 +58,6 @@ public class PipelineSnippetGenerator {
         return snippet;
     }
 
-    //TODO: Change to support full specs
     public String getAgent(Agent agent){
         String snippet = "";
 

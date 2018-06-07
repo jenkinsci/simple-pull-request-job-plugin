@@ -44,20 +44,10 @@ public class YamlToPipeline {
         script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
                 yamlPipeline.getPublishArtifacts()), numberOfTabs));
 
-//        Below code is for stage generation
-//        script += psg.getTabString(numberOfTabs) + "stage(Example) {" + newLine;
-//        numberOfTabs++;
-//
-//        script += psg.addTabs(psg.shellScript("./scripts/hello"), numberOfTabs);
-//
-//        numberOfTabs--;
-//        script += psg.getTabString(numberOfTabs) + "}" + newLine;
-
-        // Stages end
         numberOfTabs--;
-        script.append("\t}\n");
+        script.append(psg.getTabString(numberOfTabs)).append("}\n");
         numberOfTabs--;
-        script.append("}");
+        script.append(psg.getTabString(numberOfTabs)).append("}\n");
 
         return script.toString();
     }

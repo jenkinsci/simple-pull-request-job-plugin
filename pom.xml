@@ -67,18 +67,6 @@
             <version>2.12</version>
             <scope>test</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-            <!--<artifactId>workflow-cps</artifactId>-->
-            <!--<version>2.39</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-            <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-            <!--<artifactId>workflow-job</artifactId>-->
-            <!--<version>2.11.2</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
@@ -96,12 +84,6 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.21</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.jenkins-ci.plugins.workflow</groupId>-->
-            <!--<artifactId>workflow-api</artifactId>-->
-            <!--<version>2.20</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-support</artifactId>
