@@ -12,7 +12,7 @@ public class PipelineSnippetGenerator {
     PipelineSnippetGenerator(){
     }
 
-    public String shellScritp(ArrayList<String> paths){
+    public String shellScript(ArrayList<String> paths){
         StringBuilder snippet;
         snippet = new StringBuilder("script {\n" + "\tif (isUnix()) {\n");
 
@@ -133,7 +133,7 @@ public class PipelineSnippetGenerator {
         String snippet = "stage('" + stage.getName() + "') {\n";
 
         snippet += "\tsteps {\n";
-        snippet += "\t\t" + addTabs(shellScritp(stage.getScripts()), 2);
+        snippet += "\t\t" + addTabs(shellScript(stage.getScripts()), 2);
         snippet += "\t}\n";
 
         if(stage.getFailure() != null
@@ -158,18 +158,18 @@ public class PipelineSnippetGenerator {
                     snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
                 }
                 if(stage.getSuccess() != null)
-                    snippet += "\t\t\t" + addTabs(shellScritp(stage.getSuccess()), 3);
+                    snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
                 snippet += "\t\t}\n";
             }
             if (stage.getAlways() != null) {
                 snippet += "\t\talways {\n";
                 if(stage.getAlways() != null)
-                    snippet += "\t\t\t" + addTabs(shellScritp(stage.getAlways()), 3);
+                    snippet += "\t\t\t" + addTabs(shellScript(stage.getAlways()), 3);
                 snippet += "\t\t}\n";
             }
             if (stage.getFailure() != null) {
                 snippet += "\t\tfailure {\n";
-                snippet += "\t\t\t" + addTabs(shellScritp(stage.getFailure()), 3);
+                snippet += "\t\t\t" + addTabs(shellScript(stage.getFailure()), 3);
                 snippet += "\t\t}\n";
             }
 

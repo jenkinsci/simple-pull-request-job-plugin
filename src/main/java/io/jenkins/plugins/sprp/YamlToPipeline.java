@@ -48,7 +48,7 @@ public class YamlToPipeline {
 //        script += psg.getTabString(numberOfTabs) + "stage(Example) {" + newLine;
 //        numberOfTabs++;
 //
-//        script += psg.addTabs(psg.shellScritp("./scripts/hello"), numberOfTabs);
+//        script += psg.addTabs(psg.shellScript("./scripts/hello"), numberOfTabs);
 //
 //        numberOfTabs--;
 //        script += psg.getTabString(numberOfTabs) + "}" + newLine;
