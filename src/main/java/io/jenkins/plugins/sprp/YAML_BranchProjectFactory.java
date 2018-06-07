@@ -108,11 +108,9 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
 
     @Extension
     public static class DescriptorImpl extends AbstractWorkflowBranchProjectFactoryDescriptor {
-
         @Override public String getDisplayName() {
             return "by " + SCRIPT;
         }
 
     }
-
 }

@@ -24,29 +24,19 @@
 
 package io.jenkins.plugins.sprp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import hudson.Functions;
-import hudson.model.TaskListener;
 import hudson.model.Action;
-import hudson.scm.NullSCM;
-import hudson.scm.SCM;
-import jenkins.branch.Branch;
-//import jenkins.scm.api.;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import hudson.model.Queue;
+import hudson.model.TaskListener;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
-import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory;
-import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
 import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
@@ -60,17 +50,19 @@ public class YAML_FlowDefinition extends FlowDefinition {
     }
 
     public YAML_FlowDefinition(String scriptPath) {
-        this.scriptPath = "Jenkinsfile.yaml";
+        this.scriptPath = scriptPath;
     }
 
     @Override
     public FlowExecution create(FlowExecutionOwner owner, TaskListener listener,
                                           List<? extends Action> actions) throws Exception {
-        String script = "node {\n" +
-                        "    stage('Example') {\n" +
-                        "            echo 'Done Cloning'\n" +
-                        "    }\n" +
-                        "}";
+        Queue.Executable exec = owner.getExecutable();
+        if (!(exec instanceof WorkflowRun)) {
+            throw new IllegalStateException("inappropriate context");
+        }
+
+        YamlToPipeline y = new YamlToPipeline();
+        String script = y.generatePipeline(this.scriptPath, listener);
 
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
@@ -79,6 +71,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
     @Extension
     public static class DescriptorImpl extends FlowDefinitionDescriptor {
 
+        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         @Nonnull
         @Override public String getDisplayName() {
             return Messages.YAML_FlowDefinition_DescriptorImpl_DisplayName();
