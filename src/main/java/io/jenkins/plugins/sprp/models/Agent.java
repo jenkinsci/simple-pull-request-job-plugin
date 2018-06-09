@@ -1,5 +1,7 @@
 package io.jenkins.plugins.sprp.models;
 
+import org.eclipse.jgit.errors.NotSupportedException;
+
 public class Agent {
     private String label;
     private String customWorkspace;
@@ -9,8 +11,16 @@ public class Agent {
     private String dockerfile;
     private String dir;
     private boolean reuseNode;
+    private String anyOrNone;
 
     Agent(){}
+
+    Agent(String anyOrNone) throws NotSupportedException {
+        if(anyOrNone.equals("any") || anyOrNone.equals("none"))
+            this.anyOrNone = anyOrNone;
+        else
+            throw new NotSupportedException("Agent type " + anyOrNone + "is not supported.");
+    }
 
     public String getLabel() {
         return label;
@@ -74,5 +84,13 @@ public class Agent {
 
     public void setReuseNode(boolean reuseNode) {
         this.reuseNode = reuseNode;
+    }
+
+    public void setAnyOrNone(String anyOrNone) {
+        this.anyOrNone = anyOrNone;
+    }
+
+    public String getAnyOrNone() {
+        return anyOrNone;
     }
 }

@@ -2,27 +2,21 @@ package io.jenkins.plugins.sprp;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.model.TaskListener;
 import hudson.plugins.git.Branch;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.URIish;
-import org.jenkinsci.plugins.gitclient.Git;
-import org.jenkinsci.plugins.gitclient.GitClient;
-import org.jenkinsci.plugins.gitclient.CloneCommand;
-import org.jenkinsci.plugins.gitclient.CheckoutCommand;
-import org.jenkinsci.plugins.gitclient.FetchCommand;
-import org.jenkinsci.plugins.gitclient.MergeCommand;
-import org.jenkinsci.plugins.gitclient.PushCommand;
+import org.jenkinsci.plugins.gitclient.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 
 public class GitOperations {
     private static final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
-    private File workspace;
+    private FilePath workspace;
     private TaskListener listener;
     private EnvVars envVars;
     private String url;
@@ -30,7 +24,7 @@ public class GitOperations {
     private String currentBranch;
     private String currentBranchSHA1;
 
-    public GitOperations(File workspace, TaskListener listener, EnvVars envVars, String url) throws IOException, InterruptedException {
+    public GitOperations(FilePath workspace, TaskListener listener, EnvVars envVars, String url) throws IOException, InterruptedException {
         this.workspace = workspace;
         this.envVars = envVars;
         this.listener = listener;
@@ -47,6 +41,8 @@ public class GitOperations {
                 .getClient();
     }
 
+
+
     public void setEnvVars(EnvVars envVars) throws IOException, InterruptedException {
         this.envVars = envVars;
         initialiseGitClient();
@@ -56,7 +52,7 @@ public class GitOperations {
         return listener;
     }
 
-    public void setWorkspace(File workspace) throws IOException, InterruptedException {
+    public void setWorkspace(FilePath workspace) throws IOException, InterruptedException {
         this.workspace = workspace;
         initialiseGitClient();
     }
@@ -65,7 +61,7 @@ public class GitOperations {
         return currentBranch;
     }
 
-    private void setCurrentBranch(String currentBranch) {
+    public void setCurrentBranch(String currentBranch) {
         this.currentBranch = currentBranch;
     }
 

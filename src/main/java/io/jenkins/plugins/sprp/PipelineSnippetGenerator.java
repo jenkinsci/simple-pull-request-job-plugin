@@ -13,6 +13,7 @@ public class PipelineSnippetGenerator {
     }
 
     public String shellScript(ArrayList<String> paths){
+//        return "";
         StringBuilder snippet;
         snippet = new StringBuilder("script {\n" + "\tif (isUnix()) {\n");
 
@@ -35,7 +36,8 @@ public class PipelineSnippetGenerator {
         String tabs = StringUtils.repeat("\t", numberOfTabs);
 
         script = script.replace("\n", "\n" + tabs);
-        script = script.substring(0, script.length() - numberOfTabs);
+        if(script.length() > numberOfTabs)
+            script = script.substring(0, script.length() - numberOfTabs);
         return script;
     }
 
@@ -64,6 +66,8 @@ public class PipelineSnippetGenerator {
         if(agent == null){
             snippet = "any\n";
         }
+        else if(agent.getAnyOrNone() != null)
+            snippet = agent.getAnyOrNone() + "\n";
         else {
             if(agent.getDockerImage() != null){
                 snippet += "{\n";
@@ -117,8 +121,8 @@ public class PipelineSnippetGenerator {
     public String getPublishReportSnippet(ArrayList<String> paths){
         StringBuilder snippet = new StringBuilder();
 
-        for(String p: paths)
-            snippet.append("junit '").append(p).append("'\n");
+//        for(String p: paths)
+//            snippet.append("junit '").append(p).append("'\n");
 
         return snippet.toString();
     }
@@ -127,7 +131,8 @@ public class PipelineSnippetGenerator {
             Stage stage,
             ArrayList<String> buildResultPaths,
             ArrayList<String> testResultPaths,
-            ArrayList<String> archiveArtifacts
+            ArrayList<String> archiveArtifacts,
+            GitConfig gitConfig
     ){
         String snippet = "stage('" + stage.getName() + "') {\n";
 
@@ -139,7 +144,7 @@ public class PipelineSnippetGenerator {
                 || stage.getSuccess() != null
                 || stage.getAlways() != null
                 || (stage.getName().equals("Build") && (archiveArtifacts != null || buildResultPaths != null))
-                || stage.getName().equals("Tests") && testResultPaths != null) {
+                || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
             snippet += "\tpost {\n";
 
             if (stage.getSuccess() != null
@@ -153,8 +158,15 @@ public class PipelineSnippetGenerator {
                     if(buildResultPaths != null)
                         snippet += "\t\t\t" + addTabs(getPublishReportSnippet(buildResultPaths), 3);
                 }
-                if (stage.getName().equals("Tests") && testResultPaths != null) {
-                    snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
+                if (stage.getName().equals("Tests")) {
+                    if(testResultPaths != null)
+                        snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
+                    if(gitConfig.getGitUrl() != null)
+                        snippet += "\t\t\t" + addTabs("gitPush " +
+                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+                                "url: \"" + gitConfig.getGitUrl() + "\"," +
+                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
+                                "\n", 3);
                 }
                 if(stage.getSuccess() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
