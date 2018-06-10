@@ -193,7 +193,7 @@ public class GitOperations {
         }
     }
 
-    public boolean push() {
+    public boolean push(boolean fromHead) {
         PushCommand pushCommand = git.push();
 
         try {
@@ -203,7 +203,13 @@ public class GitOperations {
             return false;
         }
 
-        pushCommand.ref(currentBranch);
+        // https://stackoverflow.com/a/4183856/6693569
+        // At this point the pointer may be at detached HEAD
+        if(fromHead)
+            pushCommand.ref("HEAD:" + currentBranch);
+        else
+            pushCommand.ref(currentBranch);
+
         pushCommand.force(true);
 
         try {

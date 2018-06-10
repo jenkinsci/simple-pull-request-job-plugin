@@ -78,9 +78,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
         WorkflowJob job = build.getParent();
         BranchJobProperty property = job.getProperty(BranchJobProperty.class);
 
-        this.gitConfig = new GitConfig();
-        this.gitConfig.setGitBranch(property.getBranch().getName());
-
         Branch branch = property.getBranch();
         ItemGroup<?> parent = job.getParent();
 
@@ -97,6 +94,14 @@ public class YAML_FlowDefinition extends FlowDefinition {
         SCMRevision tip = scmSource.fetch(head, listener);
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
+
+        this.gitConfig = new GitConfig();
+        this.gitConfig.setGitBranch(property.getBranch().getName());
+
+        if(gitConfig.getGitBranch().contains("PR")){
+            String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
+            gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
+        }
 
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
         this.gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
