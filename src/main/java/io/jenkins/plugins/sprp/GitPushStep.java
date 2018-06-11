@@ -53,8 +53,8 @@ public class GitPushStep extends Step {
                 justification = "Only used when starting."
         )
         private final transient String credentialId;
-        private final transient String url;
-        private final transient String branch;
+        private final String url;
+        private final String branch;
         private static final long serialVersionUID = 1L;
 
         Execution(String credentialId, String url, String branch, StepContext context) {

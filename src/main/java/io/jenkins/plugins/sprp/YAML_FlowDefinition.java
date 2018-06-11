@@ -92,13 +92,15 @@ public class YAML_FlowDefinition extends FlowDefinition {
         }
         SCMHead head = branch.getHead();
         SCMRevision tip = scmSource.fetch(head, listener);
+        if(tip == null)
+            throw new IllegalStateException("Cannot determine the revision.");
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
         this.gitConfig = new GitConfig();
         this.gitConfig.setGitBranch(property.getBranch().getName());
 
-        if(gitConfig.getGitBranch().contains("PR")){
+        if(gitConfig.getGitBranch().startsWith("PR-")){
             String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
             gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
         }
