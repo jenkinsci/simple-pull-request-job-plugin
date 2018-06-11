@@ -121,8 +121,8 @@ public class PipelineSnippetGenerator {
     public String getPublishReportSnippet(ArrayList<String> paths){
         StringBuilder snippet = new StringBuilder();
 
-//        for(String p: paths)
-//            snippet.append("junit '").append(p).append("'\n");
+        for(String p: paths)
+            snippet.append("junit '").append(p).append("'\n");
 
         return snippet.toString();
     }
@@ -132,7 +132,8 @@ public class PipelineSnippetGenerator {
             ArrayList<String> buildResultPaths,
             ArrayList<String> testResultPaths,
             ArrayList<String> archiveArtifacts,
-            GitConfig gitConfig
+            GitConfig gitConfig,
+            String findbugs
     ){
         String snippet = "stage('" + stage.getName() + "') {\n";
 
@@ -143,15 +144,19 @@ public class PipelineSnippetGenerator {
         if(stage.getFailure() != null
                 || stage.getSuccess() != null
                 || stage.getAlways() != null
-                || (stage.getName().equals("Build") && (archiveArtifacts != null || buildResultPaths != null))
+                || (stage.getName().equals("Build") &&
+                        (archiveArtifacts != null || buildResultPaths != null || findbugs != null))
                 || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
             snippet += "\tpost {\n";
 
             if (stage.getSuccess() != null
-                    || (stage.getName().equals("Build") && (archiveArtifacts != null || buildResultPaths != null))
-                    || stage.getName().equals("Tests") && testResultPaths != null) {
+                    || (stage.getName().equals("Build"))
+                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
+                    )
+            {
                 snippet += "\t\tsuccess {\n";
                 if (stage.getName().equals("Build")) {
+                    snippet += "\t\t\t" + addTabs("archiveArtifacts artifacts: '**/target/*.jar'\n", 3);
                     if(archiveArtifacts != null)
                         snippet += "\t\t\t" + addTabs(getArchiveArtifactsSnippet(archiveArtifacts), 3);
 
@@ -172,8 +177,11 @@ public class PipelineSnippetGenerator {
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
                 snippet += "\t\t}\n";
             }
-            if (stage.getAlways() != null) {
+            if (stage.getAlways() != null || findbugs != null) {
                 snippet += "\t\talways {\n";
+                if(findbugs != null)
+                    snippet += "\t\t\t" + addTabs("findbugs canComputeNew: false, defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', pattern: '" + findbugs + "', unHealthy: ''\n", 3);
+
                 if(stage.getAlways() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getAlways()), 3);
                 snippet += "\t\t}\n";

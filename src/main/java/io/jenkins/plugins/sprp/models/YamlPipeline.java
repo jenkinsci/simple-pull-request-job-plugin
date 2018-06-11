@@ -12,6 +12,7 @@ public class YamlPipeline {
     private ArrayList<String> buildResultPaths;
     private ArrayList<String> testResultPaths;
     private ArrayList<HashMap<String, String>> publishArtifacts;
+    private String findBugs;
 
     YamlPipeline(){}
 
@@ -78,5 +79,13 @@ public class YamlPipeline {
 
     public void setTestResultPaths(ArrayList<String> testResultPaths) {
         this.testResultPaths = testResultPaths;
+    }
+
+    public String getFindBugs() {
+        return findBugs;
+    }
+
+    public void setFindBugs(String findBugs) {
+        this.findBugs = findBugs;
     }
 }

@@ -39,7 +39,8 @@ public class YamlToPipeline {
                     yamlPipeline.getBuildResultPaths(),
                     yamlPipeline.getTestResultPaths(),
                     yamlPipeline.getArchiveArtifacts(),
-                    gitConfig), numberOfTabs));
+                    gitConfig,
+                    yamlPipeline.getFindBugs()), numberOfTabs));
         }
 
 //        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
