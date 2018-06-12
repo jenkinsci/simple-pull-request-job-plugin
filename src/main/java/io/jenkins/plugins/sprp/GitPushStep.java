@@ -80,7 +80,6 @@ public class GitPushStep extends Step {
             gitOperations.setUsernameAndPasswordCredential((StandardUsernameCredentials)c);
             gitOperations.setCurrentBranch(branch);
             gitOperations.push(true);
-            listener.getLogger().println("From gitPush");
             return null;
         }
     }
