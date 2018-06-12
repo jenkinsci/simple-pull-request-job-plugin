@@ -7,17 +7,16 @@ import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class YamlToPipeline {
-    public String generatePipeline(String yamlScriptPath, TaskListener listener){
+    public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener){
         StringBuilder script;
         final String newLine = "\n";
         int numberOfTabs = 0;
 
-        YamlPipeline yamlPipeline = loadYaml(yamlScriptPath, listener);
+        YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
         if(yamlPipeline == null)
             return "";
@@ -35,14 +34,17 @@ public class YamlToPipeline {
         numberOfTabs++;
 
         for(Stage stage: yamlPipeline.getStages()){
-            script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getStage(stage,
+            script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getStage(
+                    stage,
                     yamlPipeline.getBuildResultPaths(),
                     yamlPipeline.getTestResultPaths(),
-                    yamlPipeline.getArchiveArtifacts()), numberOfTabs));
+                    yamlPipeline.getArchiveArtifacts(),
+                    gitConfig,
+                    yamlPipeline.getFindBugs()), numberOfTabs));
         }
 
-        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
-                yamlPipeline.getPublishArtifacts()), numberOfTabs));
+//        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
+//                yamlPipeline.getPublishArtifacts()), numberOfTabs));
 
         numberOfTabs--;
         script.append(psg.getTabString(numberOfTabs)).append("}\n");
@@ -52,10 +54,10 @@ public class YamlToPipeline {
         return script.toString();
     }
 
-    public YamlPipeline loadYaml(String yamlScriptPath, TaskListener listener){
+    public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener){
         Yaml yaml = new Yaml();
-        try (InputStream in = new FileInputStream(yamlScriptPath)) {
-            YamlPipeline yamlPipeline = yaml.loadAs(in, YamlPipeline.class);
+        try {
+            YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, YamlPipeline.class);
 
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));

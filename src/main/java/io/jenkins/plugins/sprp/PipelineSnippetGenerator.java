@@ -35,7 +35,8 @@ public class PipelineSnippetGenerator {
         String tabs = StringUtils.repeat("\t", numberOfTabs);
 
         script = script.replace("\n", "\n" + tabs);
-        script = script.substring(0, script.length() - numberOfTabs);
+        if(script.length() > numberOfTabs)
+            script = script.substring(0, script.length() - numberOfTabs);
         return script;
     }
 
@@ -64,6 +65,8 @@ public class PipelineSnippetGenerator {
         if(agent == null){
             snippet = "any\n";
         }
+        else if(agent.getAnyOrNone() != null)
+            snippet = agent.getAnyOrNone() + "\n";
         else {
             if(agent.getDockerImage() != null){
                 snippet += "{\n";
@@ -127,7 +130,9 @@ public class PipelineSnippetGenerator {
             Stage stage,
             ArrayList<String> buildResultPaths,
             ArrayList<String> testResultPaths,
-            ArrayList<String> archiveArtifacts
+            ArrayList<String> archiveArtifacts,
+            GitConfig gitConfig,
+            String findbugs
     ){
         String snippet = "stage('" + stage.getName() + "') {\n";
 
@@ -138,30 +143,44 @@ public class PipelineSnippetGenerator {
         if(stage.getFailure() != null
                 || stage.getSuccess() != null
                 || stage.getAlways() != null
-                || (stage.getName().equals("Build") && (archiveArtifacts != null || buildResultPaths != null))
-                || stage.getName().equals("Tests") && testResultPaths != null) {
+                || (stage.getName().equals("Build") &&
+                        (archiveArtifacts != null || buildResultPaths != null || findbugs != null))
+                || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
             snippet += "\tpost {\n";
 
             if (stage.getSuccess() != null
-                    || (stage.getName().equals("Build") && (archiveArtifacts != null || buildResultPaths != null))
-                    || stage.getName().equals("Tests") && testResultPaths != null) {
+                    || (stage.getName().equals("Build"))
+                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
+                    )
+            {
                 snippet += "\t\tsuccess {\n";
                 if (stage.getName().equals("Build")) {
+                    snippet += "\t\t\t" + addTabs("archiveArtifacts artifacts: '**/target/*.jar'\n", 3);
                     if(archiveArtifacts != null)
                         snippet += "\t\t\t" + addTabs(getArchiveArtifactsSnippet(archiveArtifacts), 3);
 
                     if(buildResultPaths != null)
                         snippet += "\t\t\t" + addTabs(getPublishReportSnippet(buildResultPaths), 3);
                 }
-                if (stage.getName().equals("Tests") && testResultPaths != null) {
-                    snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
+                if (stage.getName().equals("Tests")) {
+                    if(testResultPaths != null)
+                        snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
+                    if(gitConfig.getGitUrl() != null)
+                        snippet += "\t\t\t" + addTabs("gitPush " +
+                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+                                "url: \"" + gitConfig.getGitUrl() + "\"," +
+                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
+                                "\n", 3);
                 }
                 if(stage.getSuccess() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
                 snippet += "\t\t}\n";
             }
-            if (stage.getAlways() != null) {
+            if (stage.getAlways() != null || findbugs != null) {
                 snippet += "\t\talways {\n";
+                if(findbugs != null)
+                    snippet += "\t\t\t" + addTabs("findbugs canComputeNew: false, defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', pattern: '" + findbugs + "', unHealthy: ''\n", 3);
+
                 if(stage.getAlways() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getAlways()), 3);
                 snippet += "\t\t}\n";

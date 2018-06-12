@@ -27,20 +27,33 @@ package io.jenkins.plugins.sprp;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Action;
+import hudson.model.ItemGroup;
 import hudson.model.Queue;
 import hudson.model.TaskListener;
+import hudson.plugins.git.GitSCM;
+import jenkins.branch.Branch;
+import jenkins.scm.api.SCMFileSystem;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
+    private GitConfig gitConfig;
 
     public Object readResolve() {
         if (this.scriptPath == null) {
@@ -61,8 +74,52 @@ public class YAML_FlowDefinition extends FlowDefinition {
             throw new IllegalStateException("inappropriate context");
         }
 
-        YamlToPipeline y = new YamlToPipeline();
-        String script = y.generatePipeline(this.scriptPath, listener);
+        WorkflowRun build = (WorkflowRun) exec;
+        WorkflowJob job = build.getParent();
+        BranchJobProperty property = job.getProperty(BranchJobProperty.class);
+
+        Branch branch = property.getBranch();
+        ItemGroup<?> parent = job.getParent();
+
+        if (!(parent instanceof WorkflowMultiBranchProject)) {
+            throw new IllegalStateException("inappropriate context");
+        }
+
+        SCMSource scmSource = ((WorkflowMultiBranchProject) parent).getSCMSource(branch.getSourceId());
+
+        if (scmSource == null) {
+            throw new IllegalStateException(branch.getSourceId() + " not found");
+        }
+        SCMHead head = branch.getHead();
+        SCMRevision tip = scmSource.fetch(head, listener);
+        if(tip == null)
+            throw new IllegalStateException("Cannot determine the revision.");
+        SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
+        GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
+
+        this.gitConfig = new GitConfig();
+        this.gitConfig.setGitBranch(property.getBranch().getName());
+
+        if(gitConfig.getGitBranch().startsWith("PR-")){
+            String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
+            gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
+        }
+
+        this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
+        this.gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
+
+        String script;
+        try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
+            if (fs != null) {
+                InputStream yamlInputStream = fs.child(scriptPath).content();
+                listener.getLogger().println("Path of Jenkinsfile.yaml" + fs.child(scriptPath).getPath());
+                YamlToPipeline y = new YamlToPipeline();
+                script = y.generatePipeline(yamlInputStream, this.gitConfig, listener);
+            } else {
+                throw new IOException("SCM not supported");
+                // FIXME implement full checkout
+            }
+        }
 
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);

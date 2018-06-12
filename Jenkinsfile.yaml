@@ -4,11 +4,7 @@ artifactPublishingConfig:
     user: user53
     credentialId: dummyGitRepo
 
-agent:
-    dockerImage: docker-image
-    label: linux
-    customWorkspace: scripts/
-    reuseNode: true
+agent: any
 
 #buildResultPaths:
 #    - path-1
