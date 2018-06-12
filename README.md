@@ -24,3 +24,5 @@ To run the demo repository configure the GitHub branch source as shown in the ab
 figure. Don't specify git credentials (As no one except @gautamabhishek have them) 
 and the build will be successful except one git push step at the last. Everyone can
 also use "Scan Repository Now" and "Build Now" (for all branches and PRs).
+
+[Demo repository](https://github.com/gautamabhishek46/dummy)
