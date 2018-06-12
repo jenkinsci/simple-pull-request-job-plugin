@@ -13,7 +13,6 @@ public class PipelineSnippetGenerator {
     }
 
     public String shellScript(ArrayList<String> paths){
-//        return "";
         StringBuilder snippet;
         snippet = new StringBuilder("script {\n" + "\tif (isUnix()) {\n");
 
