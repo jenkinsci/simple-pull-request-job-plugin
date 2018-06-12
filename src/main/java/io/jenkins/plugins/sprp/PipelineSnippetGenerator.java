@@ -176,10 +176,10 @@ public class PipelineSnippetGenerator {
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
                 snippet += "\t\t}\n";
             }
-            if (stage.getAlways() != null || findbugs != null) {
+            if (stage.getAlways() != null || (findbugs != null && stage.getName().equals("Tests"))) {
                 snippet += "\t\talways {\n";
-                if(findbugs != null)
-                    snippet += "\t\t\t" + addTabs("findbugs canComputeNew: false, defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', pattern: '" + findbugs + "', unHealthy: ''\n", 3);
+                if(findbugs != null && stage.getName().equals("Tests"))
+                    snippet += "\t\t\t" + addTabs("findbugs pattern: '" + findbugs + "'\n", 3);
 
                 if(stage.getAlways() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getAlways()), 3);
