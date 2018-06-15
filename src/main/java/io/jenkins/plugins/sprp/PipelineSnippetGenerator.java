@@ -121,7 +121,7 @@ public class PipelineSnippetGenerator {
         StringBuilder snippet = new StringBuilder();
 
         for(String p: paths)
-            snippet.append("junit '").append(p).append("'\n");
+            snippet.append("junit testResults: '").append(p).append(", allowEmptyResults: true").append("'\n");
 
         return snippet.toString();
     }
@@ -150,7 +150,7 @@ public class PipelineSnippetGenerator {
 
             if (stage.getSuccess() != null
                     || (stage.getName().equals("Build"))
-                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
+                    || stage.getName().equals("Tests") && (testResultPaths != null)// || gitConfig.getGitUrl() != null)
                     )
             {
                 snippet += "\t\tsuccess {\n";
@@ -165,12 +165,12 @@ public class PipelineSnippetGenerator {
                 if (stage.getName().equals("Tests")) {
                     if(testResultPaths != null)
                         snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
-                    if(gitConfig.getGitUrl() != null)
-                        snippet += "\t\t\t" + addTabs("gitPush " +
-                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
-                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
-                                "\n", 3);
+//                    if(gitConfig.getGitUrl() != null)
+//                        snippet += "\t\t\t" + addTabs("gitPush " +
+//                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+//                                "url: \"" + gitConfig.getGitUrl() + "\"," +
+//                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
+//                                "\n", 3);
                 }
                 if(stage.getSuccess() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
