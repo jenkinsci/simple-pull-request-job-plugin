@@ -31,6 +31,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Queue;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
 import jenkins.branch.Branch;
 import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMHead;
@@ -100,9 +101,20 @@ public class YAML_FlowDefinition extends FlowDefinition {
         this.gitConfig = new GitConfig();
         this.gitConfig.setGitBranch(property.getBranch().getName());
 
+        listener.getLogger().println("Refspecs: ");
+
+        for(UserRemoteConfig urc: gitSCM.getUserRemoteConfigs()){
+            listener.getLogger().println(urc.getRefspec());
+        }
+
         if(gitConfig.getGitBranch().startsWith("PR-")){
-            String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
-            gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
+            for(UserRemoteConfig urc: gitSCM.getUserRemoteConfigs()) {
+                if(!urc.getRefspec().contains("PR-")) {
+                    String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
+                    gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
+                    break;
+                }
+            }
         }
 
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
