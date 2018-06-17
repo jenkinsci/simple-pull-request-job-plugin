@@ -50,6 +50,7 @@ import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class YAML_FlowDefinition extends FlowDefinition {
@@ -107,11 +108,11 @@ public class YAML_FlowDefinition extends FlowDefinition {
             listener.getLogger().println(urc.getRefspec());
         }
 
+        // FIXME This will fail if branch name will contain '/'
         if(gitConfig.getGitBranch().startsWith("PR-")){
-            for(UserRemoteConfig urc: gitSCM.getUserRemoteConfigs()) {
-                if(!urc.getRefspec().contains("PR-")) {
-                    String[] refSpecs = gitSCM.getUserRemoteConfigs().get(0).getRefspec().split("/", 0);
-                    gitConfig.setGitBranch(refSpecs[refSpecs.length - 1]);
+            for(String urc: getCleanRefspecs(gitSCM.getUserRemoteConfigs())) {
+                if(!urc.contains("PR-")) {
+                    gitConfig.setGitBranch(getBranchName(urc.split("/")));
                     break;
                 }
             }
@@ -135,6 +136,36 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
+    }
+
+    private List<String> getCleanRefspecs(List<UserRemoteConfig> userRemoteConfigs){
+        List<String> refSpecs = new ArrayList<>();
+
+        for(UserRemoteConfig urc: userRemoteConfigs)
+            for(String s: urc.getRefspec().split("\\+", 0))
+                if(!s.equals(""))
+                    refSpecs.add(s);
+
+        for(int i = 0; i < refSpecs.size(); i++)
+            refSpecs.set(i, refSpecs.get(i).trim());
+
+        return refSpecs;
+    }
+
+    private String getBranchName(String[] refSpecsArray){
+        boolean done = false;
+        StringBuilder branchName = new StringBuilder();
+        for(int i = 0; i < refSpecsArray.length && !done; i++){
+            if(refSpecsArray[i].equals("upstream") || refSpecsArray[i].equals("origin")){
+                for(int j = i + 1; j < refSpecsArray.length; j++)
+                    branchName.append(refSpecsArray[j]).append("/");
+
+                branchName = new StringBuilder(branchName.substring(0, branchName.length() - 1));
+                done = true;
+            }
+        }
+
+        return branchName.toString();
     }
 
     @Extension
