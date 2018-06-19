@@ -138,6 +138,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
         return new CpsFlowExecution(script, false, owner);
     }
 
+    // In refpecs there will be '+' symbol and some trailing white spaces, we need to remove them.
     private List<String> getCleanRefspecs(List<UserRemoteConfig> userRemoteConfigs){
         List<String> refSpecs = new ArrayList<>();
 
@@ -152,6 +153,16 @@ public class YAML_FlowDefinition extends FlowDefinition {
         return refSpecs;
     }
 
+    /*
+
+    Bit-bucket generated following two similar refspecs:
+    refs/heads/abhishekg1128/readmemd-edited-online-with-bitbucket-1529079381853:refs/remotes/origin/PR-1
+    refs/heads/master:refs/remotes/upstream/master
+
+    And GitHub generates following two similar refspecs in single string"
+    +refs/pull/3/head:refs/remotes/origin/PR-3 +refs/heads/master:refs/remotes/origin/master
+
+    */
     private String getBranchName(String[] refSpecsArray){
         boolean done = false;
         StringBuilder branchName = new StringBuilder();
