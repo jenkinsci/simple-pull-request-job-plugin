@@ -121,7 +121,7 @@ public class PipelineSnippetGenerator {
         StringBuilder snippet = new StringBuilder();
 
         for(String p: paths)
-            snippet.append("junit testResults: '").append(p).append(", allowEmptyResults: true").append("'\n");
+            snippet.append("junit '").append(p).append("'\n");
 
         return snippet.toString();
     }
