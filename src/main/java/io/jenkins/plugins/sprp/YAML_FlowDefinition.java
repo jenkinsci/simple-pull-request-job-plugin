@@ -102,13 +102,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
         this.gitConfig = new GitConfig();
         this.gitConfig.setGitBranch(property.getBranch().getName());
 
-        listener.getLogger().println("Refspecs: ");
-
-        for(UserRemoteConfig urc: gitSCM.getUserRemoteConfigs()){
-            listener.getLogger().println(urc.getRefspec());
-        }
-
-        // FIXME This will fail if branch name will contain '/'
         if(gitConfig.getGitBranch().startsWith("PR-")){
             for(String urc: getCleanRefspecs(gitSCM.getUserRemoteConfigs())) {
                 if(!urc.contains("PR-")) {
@@ -142,13 +135,13 @@ public class YAML_FlowDefinition extends FlowDefinition {
     private List<String> getCleanRefspecs(List<UserRemoteConfig> userRemoteConfigs){
         List<String> refSpecs = new ArrayList<>();
 
-        for(UserRemoteConfig urc: userRemoteConfigs)
-            for(String s: urc.getRefspec().split("\\+", 0))
-                if(!s.equals(""))
-                    refSpecs.add(s);
-
-        for(int i = 0; i < refSpecs.size(); i++)
-            refSpecs.set(i, refSpecs.get(i).trim());
+        for(UserRemoteConfig urc: userRemoteConfigs) {
+            for (String singleRefSpec : urc.getRefspec().split("\\+", 0)) {
+                if (!singleRefSpec.equals("")) {
+                    refSpecs.add(singleRefSpec);
+                }
+            }
+        }
 
         return refSpecs;
     }
@@ -168,8 +161,9 @@ public class YAML_FlowDefinition extends FlowDefinition {
         StringBuilder branchName = new StringBuilder();
         for(int i = 0; i < refSpecsArray.length && !done; i++){
             if(refSpecsArray[i].equals("upstream") || refSpecsArray[i].equals("origin")){
-                for(int j = i + 1; j < refSpecsArray.length; j++)
+                for(int j = i + 1; j < refSpecsArray.length; j++) {
                     branchName.append(refSpecsArray[j]).append("/");
+                }
 
                 branchName = new StringBuilder(branchName.substring(0, branchName.length() - 1));
                 done = true;
