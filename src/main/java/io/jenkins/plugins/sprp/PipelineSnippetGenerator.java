@@ -165,6 +165,7 @@ public class PipelineSnippetGenerator {
                 if (stage.getName().equals("Tests")) {
                     if(testResultPaths != null)
                         snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
+//                    Below commented code is to generate gitPush step, this is only commented for testing purpose.
 //                    if(gitConfig.getGitUrl() != null)
 //                        snippet += "\t\t\t" + addTabs("gitPush " +
 //                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
