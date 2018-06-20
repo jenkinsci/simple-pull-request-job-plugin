@@ -103,9 +103,9 @@ public class YAML_FlowDefinition extends FlowDefinition {
         this.gitConfig.setGitBranch(property.getBranch().getName());
 
         if(gitConfig.getGitBranch().startsWith("PR-")){
-            for(String urc: getCleanRefspecs(gitSCM.getUserRemoteConfigs())) {
+            for(String urc: getCleanRefSpecs(gitSCM.getUserRemoteConfigs())) {
                 if(!urc.contains("PR-")) {
-                    gitConfig.setGitBranch(getBranchName(urc.split("/")));
+                    gitConfig.setGitBranch(getBranchName(urc));
                     break;
                 }
             }
@@ -131,8 +131,14 @@ public class YAML_FlowDefinition extends FlowDefinition {
         return new CpsFlowExecution(script, false, owner);
     }
 
-    // In refpecs there will be '+' symbol and some trailing white spaces, we need to remove them.
-    private List<String> getCleanRefspecs(List<UserRemoteConfig> userRemoteConfigs){
+    /**
+     * A refSpec is similar to: {@code +refs/heads/master:refs/remotes/origin/master}.
+     * {@code getCleanRefSpecs} removes all the trailing spaces and unwanted '+' symbols from refSpecs.
+     *
+     * @param userRemoteConfigs {@link UserRemoteConfig} Remote configurations of target repo.
+     * @return List<String> List of strings containing refSpecs without trailing spaces and '+' symbols.
+     */
+    private List<String> getCleanRefSpecs(List<UserRemoteConfig> userRemoteConfigs){
         List<String> refSpecs = new ArrayList<>();
 
         for(UserRemoteConfig urc: userRemoteConfigs) {
@@ -146,23 +152,30 @@ public class YAML_FlowDefinition extends FlowDefinition {
         return refSpecs;
     }
 
-    /*
-
-    Bit-bucket generated following two similar refspecs:
-    refs/heads/abhishekg1128/readmemd-edited-online-with-bitbucket-1529079381853:refs/remotes/origin/PR-1
-    refs/heads/master:refs/remotes/upstream/master
-
-    And GitHub generates following two similar refspecs in single string"
-    +refs/pull/3/head:refs/remotes/origin/PR-3 +refs/heads/master:refs/remotes/origin/master
-
-    */
-    private String getBranchName(String[] refSpecsArray){
+    /**
+     * Bit-bucket generates following two similar refSpecs for pull request:
+     * {@code refs/heads/abhishekg1128/readmemd-edited-online-with-bitbucket-1529079381853:refs/remotes/origin/PR-1}
+     * {@code refs/heads/master:refs/remotes/upstream/master}
+     *
+     * And GitHub generates following two similar refspecs in single string"
+     * {@code +refs/pull/3/head:refs/remotes/origin/PR-3 +refs/heads/master:refs/remotes/origin/master}
+     * {@code getCleanRefSpecs} removes all the trailing spaces and unwanted '+' symbols from refSpecs.
+     *
+     * As branch name can contain {@code '/'}, this function will split the refSpec provided as parameter with
+     * {@code '/'} and look for {@code upstream} and {@code origin} keyword, when anyone of the two found it will
+     * assume that all the remaining elements correspond to the name of branch.
+     *
+     * @param refSpec One refSpec which will from which we need to get the name of branch.
+     * @return List<String> List of strings containing refSpecs without trailing spaces and '+' symbols.
+     */
+    private String getBranchName(String refSpec){
         boolean done = false;
+        String[] refSpecArray = refSpec.split("/");
         StringBuilder branchName = new StringBuilder();
-        for(int i = 0; i < refSpecsArray.length && !done; i++){
-            if(refSpecsArray[i].equals("upstream") || refSpecsArray[i].equals("origin")){
-                for(int j = i + 1; j < refSpecsArray.length; j++) {
-                    branchName.append(refSpecsArray[j]).append("/");
+        for(int i = 0; i < refSpecArray.length && !done; i++){
+            if(refSpecArray[i].equals("upstream") || refSpecArray[i].equals("origin")){
+                for(int j = i + 1; j < refSpecArray.length; j++) {
+                    branchName.append(refSpecArray[j]).append("/");
                 }
 
                 branchName = new StringBuilder(branchName.substring(0, branchName.length() - 1));
