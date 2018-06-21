@@ -153,7 +153,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
     }
 
     /**
-     * Bit-bucket generates following two similar refSpecs for pull request:
+     * Bitbucket generates following two similar refSpecs for pull request:
      * {@code refs/heads/abhishekg1128/readmemd-edited-online-with-bitbucket-1529079381853:refs/remotes/origin/PR-1}
      * {@code refs/heads/master:refs/remotes/upstream/master}
      *
@@ -161,12 +161,12 @@ public class YAML_FlowDefinition extends FlowDefinition {
      * {@code +refs/pull/3/head:refs/remotes/origin/PR-3 +refs/heads/master:refs/remotes/origin/master}
      * {@code getCleanRefSpecs} removes all the trailing spaces and unwanted '+' symbols from refSpecs.
      *
-     * As branch name can contain {@code '/'}, this function will split the refSpec provided as parameter with
-     * {@code '/'} and look for {@code upstream} and {@code origin} keyword, when anyone of the two found it will
-     * assume that all the remaining elements correspond to the name of branch.
+     * As branch name can contain {@code '/'}, this function splits the refSpec provided as parameter with
+     * {@code '/'} and look for {@code upstream} and {@code origin} keyword, when anyone of the two found
+     * assumes that all the remaining elements correspond to name of the branch.
      *
-     * @param refSpec One refSpec which will from which we need to get the name of branch.
-     * @return List<String> List of strings containing refSpecs without trailing spaces and '+' symbols.
+     * @param refSpec The refSpec from which a branch name is extracted.
+     * @return String Name of branch.
      */
     private String getBranchName(String refSpec){
         boolean done = false;
