@@ -21,7 +21,7 @@ public class YamlToPipeline {
         if(yamlPipeline == null)
             return "";
 
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(listener);
+        PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
 
         script = new StringBuilder("pipeline {\n");
         numberOfTabs++;

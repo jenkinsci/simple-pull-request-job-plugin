@@ -1,25 +1,15 @@
 package io.jenkins.plugins.sprp;
 
-import hudson.model.Descriptor;
-import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
-import io.jenkins.plugins.sprp.models.Step;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.casc.Configurator;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
-import org.jenkinsci.plugins.casc.model.Scalar;
-import org.jenkinsci.plugins.workflow.cps.Snippetizer;
-import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PipelineSnippetGenerator {
-    private TaskListener listener;
-    PipelineSnippetGenerator(TaskListener listener){
-        this.listener = listener;
+    PipelineSnippetGenerator(){
     }
 
     public String shellScript(ArrayList<String> paths){
@@ -136,52 +126,6 @@ public class PipelineSnippetGenerator {
         return snippet.toString();
     }
 
-    private String getSteps(ArrayList<Step> steps){
-        StringBuilder snippet = new StringBuilder();
-
-        snippet.append("\tsteps {\n");
-        for(Step step: steps)
-            snippet.append("\t\t").append(stepConfigurator(step));
-        snippet.append("\t}\n");
-
-        return snippet.toString();
-    }
-
-    private String stepConfigurator(Step step){
-        String snippet = "";
-        try {
-            // Right now all the parameter of a step are considered to be string.
-            Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
-            Class clazz = stepDescriptor.clazz;
-
-            Object stepObject;
-
-//            Mapping mapping = new Mapping();
-
-//            if(step.getDefalutParameter() != null){
-//                try {
-//                    stepObject = clazz.newInstance();
-//                    clazz.getDeclaredFields()[0].getAnnotatedType().getType().getTypeName();
-//                } catch (InstantiationException e) {
-//                    listener.getLogger().println("Exception during generating step object.");
-//                    e.printStackTrace();
-//                } catch (IllegalAccessException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-
-//            mapping.put("testResults", new Scalar("./sadf"));
-//            clazz.getConstructor()
-            stepObject = Configurator.lookup(clazz).configure(new Scalar(step.getDefalutParameter()));
-            listener.getLogger().println(Snippetizer.object2Groovy(stepObject));
-
-        } catch (ConfiguratorException e) {
-            e.printStackTrace();
-        }
-
-        return snippet;
-    }
-
     public String getStage(
             Stage stage,
             ArrayList<String> buildResultPaths,
@@ -193,8 +137,7 @@ public class PipelineSnippetGenerator {
         String snippet = "stage('" + stage.getName() + "') {\n";
 
         snippet += "\tsteps {\n";
-        // Todo: needs to be fixed now only
-        snippet += "\t\t" + addTabs(getSteps(stage.getSteps()), 2);
+        snippet += "\t\t" + addTabs(shellScript(stage.getScripts()), 2);
         snippet += "\t}\n";
 
         if(stage.getFailure() != null

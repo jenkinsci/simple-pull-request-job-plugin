@@ -16,14 +16,14 @@ agent: any
 
 stages:
     - name: First
-      steps:
-        -   sh: ./scripts/hello
+      scripts:
+        -   ./scripts/hello
     - name: Build
-      steps:
-        -   sh: ./scripts/build
+      scripts:
+        -   ./scripts/hello
     - name: Tests
-      steps:
-        -   sh: ./scripts/test
+      scripts:
+        -   ./scripts/hello
 
 archiveArtifacts:
     - Jenkinsfile.yaml
