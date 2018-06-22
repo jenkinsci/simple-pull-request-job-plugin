@@ -100,14 +100,12 @@ public class YAML_FlowDefinition extends FlowDefinition {
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
         this.gitConfig = new GitConfig();
+        this.gitConfig.setGitBranch(property.getBranch().getName());
 
         if(gitConfig.getGitBranch().startsWith("PR-")){
             this.gitConfig.setGitBranch(getBranchForPR(gitSCM));
             if(this.gitConfig.getGitBranch() == null)
                 throw new IllegalStateException("Cannot determine the name of target branch.");
-        }
-        else{
-            this.gitConfig.setGitBranch(property.getBranch().getName());
         }
 
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
