@@ -71,6 +71,4 @@ public class YamlToPipeline {
             return null;
         }
     }
-
-
 }

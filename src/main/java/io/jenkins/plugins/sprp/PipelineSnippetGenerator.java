@@ -150,7 +150,7 @@ public class PipelineSnippetGenerator {
 
             if (stage.getSuccess() != null
                     || (stage.getName().equals("Build"))
-                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
+                    || stage.getName().equals("Tests") && (testResultPaths != null)// || gitConfig.getGitUrl() != null)
                     )
             {
                 snippet += "\t\tsuccess {\n";
@@ -165,12 +165,13 @@ public class PipelineSnippetGenerator {
                 if (stage.getName().equals("Tests")) {
                     if(testResultPaths != null)
                         snippet += "\t\t\t" + addTabs(getPublishReportSnippet(testResultPaths), 3);
-                    if(gitConfig.getGitUrl() != null)
-                        snippet += "\t\t\t" + addTabs("gitPush " +
-                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
-                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
-                                "\n", 3);
+//                    TODO Abhishek: code is commented out for testing purposes, it will be reinstated later
+//                    if(gitConfig.getGitUrl() != null)
+//                        snippet += "\t\t\t" + addTabs("gitPush " +
+//                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+//                                "url: \"" + gitConfig.getGitUrl() + "\"," +
+//                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
+//                                "\n", 3);
                 }
                 if(stage.getSuccess() != null)
                     snippet += "\t\t\t" + addTabs(shellScript(stage.getSuccess()), 3);
