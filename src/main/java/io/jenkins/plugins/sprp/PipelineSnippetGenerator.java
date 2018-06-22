@@ -15,6 +15,7 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class PipelineSnippetGenerator {
     private TaskListener listener;
@@ -172,7 +173,7 @@ public class PipelineSnippetGenerator {
 
 //            mapping.put("testResults", new Scalar("./sadf"));
 //            clazz.getConstructor()
-            stepObject = Configurator.lookup(clazz).configure(new Scalar(step.getDefalutParameter()));
+            stepObject = Objects.requireNonNull(Configurator.lookup(clazz)).configure(new Scalar(step.getDefalutParameter()));
             listener.getLogger().println(Snippetizer.object2Groovy(stepObject));
 
         } catch (ConfiguratorException e) {
