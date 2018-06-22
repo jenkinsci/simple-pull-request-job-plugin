@@ -100,15 +100,14 @@ public class YAML_FlowDefinition extends FlowDefinition {
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
         this.gitConfig = new GitConfig();
-        this.gitConfig.setGitBranch(property.getBranch().getName());
 
         if(gitConfig.getGitBranch().startsWith("PR-")){
-            for(String urc: getCleanRefSpecs(gitSCM.getUserRemoteConfigs())) {
-                if(!urc.contains("PR-")) {
-                    gitConfig.setGitBranch(getBranchName(urc));
-                    break;
-                }
-            }
+            this.gitConfig.setGitBranch(getBranchForPR(gitSCM));
+            if(this.gitConfig.getGitBranch() == null)
+                throw new IllegalStateException("Cannot determine the name of target branch.");
+        }
+        else{
+            this.gitConfig.setGitBranch(property.getBranch().getName());
         }
 
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
@@ -129,6 +128,16 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
+    }
+
+    private String getBranchForPR(GitSCM gitSCM){
+        for(String urc: getCleanRefSpecs(gitSCM.getUserRemoteConfigs())) {
+            if(!urc.contains("PR-")) {
+                return getBranchName(urc);
+            }
+        }
+
+        return null;
     }
 
     /**
