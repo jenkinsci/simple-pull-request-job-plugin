@@ -192,15 +192,21 @@ public class PipelineSnippetGenerator {
                 else if(objectClass == Boolean.class)
                     mapping.put(entry.getKey(), (Boolean) entry.getValue());
                 else if(objectClass == Float.class)
-                    mapping.put(entry.getKey(), (float) entry.getValue());
+                    mapping.put(entry.getKey(), (Float) entry.getValue());
                 if(objectClass == Double.class)
-                    mapping.put(entry.getKey(), (double) entry.getValue());
+                    mapping.put(entry.getKey(), (Double) entry.getValue());
                 else if(objectClass == Integer.class)
-                    mapping.put(entry.getKey(), (float) entry.getValue());
+                    mapping.put(entry.getKey(), (Integer) entry.getValue());
             }
 
             try {
-                stepObject = Configurator.lookup(clazz).configure(mapping);
+                Configurator configurator = Configurator.lookup(clazz);
+                if (configurator != null) {
+                    stepObject = configurator.configure(mapping);
+                }
+                else{
+                    throw new IllegalStateException("Cannot find a configurator for " + step.getStepName() + "step.");
+                }
             } catch (ConfiguratorException e) {
                 e.printStackTrace();
             }
