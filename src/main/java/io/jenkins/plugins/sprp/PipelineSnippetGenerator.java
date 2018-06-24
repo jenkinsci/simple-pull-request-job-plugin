@@ -7,14 +7,17 @@ import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
 import org.apache.commons.lang.StringUtils;
-import org.jenkinsci.plugins.casc.Configurator;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
-import org.jenkinsci.plugins.casc.model.Scalar;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+//import org.jenkinsci.plugins.casc.Configurator;
+//import org.jenkinsci.plugins.casc.ConfiguratorException;
+//import org.jenkinsci.plugins.casc.model.Scalar;
 
 public class PipelineSnippetGenerator {
     private TaskListener listener;
@@ -149,7 +152,7 @@ public class PipelineSnippetGenerator {
 
     private String stepConfigurator(Step step){
         String snippet = "";
-        try {
+//        try {
             // Right now all the parameter of a step are considered to be string.
             Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
             Class clazz = stepDescriptor.clazz;
@@ -158,28 +161,44 @@ public class PipelineSnippetGenerator {
 
 //            Mapping mapping = new Mapping();
 
-//            if(step.getDefalutParameter() != null){
-//                try {
+            if(step.getDefalutParameter() != null){
+                try {
 //                    stepObject = clazz.newInstance();
-//                    clazz.getDeclaredFields()[0].getAnnotatedType().getType().getTypeName();
-//                } catch (InstantiationException e) {
-//                    listener.getLogger().println("Exception during generating step object.");
-//                    e.printStackTrace();
-//                } catch (IllegalAccessException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+                    try {
+                        Constructor c = clazz.getConstructor(String.class);
+                        try {
+                            stepObject = c.newInstance(step.getDefalutParameter());
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                            return null;
+                        }
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                    clazz.getDeclaredFields()[0].getAnnotatedType().getType().getTypeName();
+                } catch (InstantiationException e) {
+                    listener.getLogger().println("Exception during generating step object.");
+                    e.printStackTrace();
+                    return null;
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            else
+                return null;
 
 //            mapping.put("testResults", new Scalar("./sadf"));
 //            clazz.getConstructor()
-            stepObject = Configurator.lookup(clazz).configure(new Scalar(step.getDefalutParameter()));
+//            stepObject = Configurator.lookup(clazz).configure(new Scalar(step.getDefalutParameter()));
 
             listener.getLogger().println(Snippetizer.object2Groovy(stepObject));
             snippet = Snippetizer.object2Groovy(stepObject);
-        } catch (ConfiguratorException e) {
-            e.printStackTrace();
-        }
-
+//        } catch (ConfiguratorException e) {
+//            e.printStackTrace();
+//        }
+//
         return snippet;
     }
 

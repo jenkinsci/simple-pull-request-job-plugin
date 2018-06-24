@@ -1,22 +1,24 @@
 package io.jenkins.plugins.sprp.models;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Step {
     private String stepName;
     private String defalutParameter;
     private HashMap<String, String> parameters;
 
+    Step(){
+
+    }
+
     Step(String stepName){
         this.stepName = stepName;
     }
 
-    Step(HashMap<String, String> stepNameAndDefaultParameter){
-        for(Map.Entry<String, String> entry: stepNameAndDefaultParameter.entrySet()){
-            stepName = entry.getKey();
-            defalutParameter = entry.getValue();
-        }
+    Step(AbstractMap.SimpleEntry<String, String> stepNameAndDefaultParameter){
+            stepName = stepNameAndDefaultParameter.getKey();
+            defalutParameter = stepNameAndDefaultParameter.getValue();
     }
 
     public String getStepName() {
@@ -37,5 +39,9 @@ public class Step {
 
     public String getDefalutParameter() {
         return defalutParameter;
+    }
+
+    public void setDefalutParameter(String defalutParameter) {
+        this.defalutParameter = defalutParameter;
     }
 }

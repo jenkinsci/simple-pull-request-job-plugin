@@ -16,14 +16,16 @@ agent: any
 
 stages:
     - name: First
-      scripts:
-        -   ./scripts/hello
+      steps:
+        - sh './scripts/hello'
     - name: Build
-      scripts:
-        -   ./scripts/hello
+      steps:
+        - stepName: sh
+          defalutParameter: ./scripts/hello
     - name: Tests
-      scripts:
-        -   ./scripts/hello
+      steps:
+        - stepName: sh
+          defalutParameter: ./scripts/hello
 
 archiveArtifacts:
     - Jenkinsfile.yaml
