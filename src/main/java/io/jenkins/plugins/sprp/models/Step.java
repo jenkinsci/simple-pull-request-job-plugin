@@ -6,14 +6,24 @@ import java.util.HashMap;
 public class Step {
     private String stepName;
     private String defalutParameter;
-    private HashMap<String, String> parameters;
+    private HashMap<String, Object> parameters;
 
     Step(){
 
     }
 
     Step(String stepName){
-        this.stepName = stepName;
+        System.out.println("stepname: " + stepName);
+        if(!stepName.contains(" "))
+            this.stepName = stepName;
+        else{
+            String[] str = stepName.split(" ", 0);
+            this.stepName = str[0];
+            this.defalutParameter = str[1];
+
+            if(this.defalutParameter.startsWith("'") || this.defalutParameter.startsWith("\""))
+                this.defalutParameter = this.defalutParameter.substring(1, this.defalutParameter.length() - 1);
+        }
     }
 
     Step(AbstractMap.SimpleEntry<String, String> stepNameAndDefaultParameter){
@@ -29,11 +39,11 @@ public class Step {
         this.stepName = stepName;
     }
 
-    public HashMap<String, String> getParameters() {
+    public HashMap<String, Object> getParameters() {
         return parameters;
     }
 
-    public void setParameters(HashMap<String, String> parameters) {
+    public void setParameters(HashMap<String, Object> parameters) {
         this.parameters = parameters;
     }
 

@@ -7,7 +7,6 @@ import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -58,9 +57,7 @@ public class YamlToPipeline {
     public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener){
         Yaml yaml = new Yaml();
         try {
-            String filePath = "/mnt/CC0091D90091CB3A/workspace/OpenSource/jenkinsOrg/simple-pull-request-job-plugin/Jenkinsfile.yaml";
-            InputStream inputStream = new FileInputStream(filePath);
-            YamlPipeline yamlPipeline = yaml.loadAs(inputStream, io.jenkins.plugins.sprp.models.YamlPipeline.class);
+            YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, io.jenkins.plugins.sprp.models.YamlPipeline.class);
 
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));
