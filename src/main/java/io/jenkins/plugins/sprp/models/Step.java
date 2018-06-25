@@ -1,9 +1,11 @@
 package io.jenkins.plugins.sprp.models;
 
+import javax.annotation.Nonnull;
 import java.util.AbstractMap;
 import java.util.HashMap;
 
 public class Step {
+    @Nonnull
     private String stepName;
     private String defaultParameter;
     private HashMap<String, Object> parameters;

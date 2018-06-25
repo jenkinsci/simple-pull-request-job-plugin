@@ -21,9 +21,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class PipelineSnippetGenerator {
-    private Logger logger;
+    static private Logger logger = java.util.logging.Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
+
     PipelineSnippetGenerator(){
-        logger = java.util.logging.Logger.getLogger(this.getClass().getName());
+
     }
 
     public String shellScript(ArrayList<String> paths){
