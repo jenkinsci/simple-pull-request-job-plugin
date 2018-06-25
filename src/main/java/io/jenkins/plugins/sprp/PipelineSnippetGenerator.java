@@ -1,7 +1,6 @@
 package io.jenkins.plugins.sprp;
 
 import hudson.model.Descriptor;
-import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
@@ -18,11 +17,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PipelineSnippetGenerator {
-    private TaskListener listener;
-    PipelineSnippetGenerator(TaskListener listener){
-        this.listener = listener;
+    private Logger logger;
+    PipelineSnippetGenerator(){
+        logger = java.util.logging.Logger.getLogger(this.getClass().getName());
     }
 
     public String shellScript(ArrayList<String> paths){
@@ -139,7 +140,7 @@ public class PipelineSnippetGenerator {
         return snippet.toString();
     }
 
-    private String getSteps(ArrayList<Step> steps){
+    private String getSteps(ArrayList<Step> steps) throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
         StringBuilder snippet = new StringBuilder();
 
         snippet.append("\tsteps {\n");
@@ -150,73 +151,54 @@ public class PipelineSnippetGenerator {
         return snippet.toString();
     }
 
-    private String stepConfigurator(Step step){
+    private String stepConfigurator(Step step)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+            InstantiationException, ConfiguratorException, NoSuchFieldException {
         String snippet;
         Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
 
         if(stepDescriptor == null)
-            throw new IllegalStateException("No step exist with the name of " + step.getStepName());
+            throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
 
         Class clazz = stepDescriptor.clazz;
 
         Object stepObject = null;
 
         // Right now all the DefaultParameter of a step are considered to be string.
-        if(step.getDefalutParameter() != null){
-            try {
-                try {
-                    Constructor c = clazz.getConstructor(String.class);
-                    try {
-                        stepObject = c.newInstance(step.getDefalutParameter());
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                } catch (NoSuchMethodException e) {
-                    e.printStackTrace();
-                }
-            } catch (InstantiationException e) {
-                listener.getLogger().println("Exception during generating step object.");
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+        if(step.getDefaultParameter() != null){
+            Constructor c = clazz.getConstructor(String.class);
+            stepObject = c.newInstance(step.getDefaultParameter());
         }
         else{
             Mapping mapping = new Mapping();
 
             for(Map.Entry<String, Object> entry: step.getParameters().entrySet()){
-                Class objectClass = entry.getValue().getClass();
+                Class stepFieldClass = clazz.getDeclaredField(entry.getKey()).getType();
 
-                if(objectClass == String.class)
+                if(stepFieldClass == String.class)
                     mapping.put(entry.getKey(), (String) entry.getValue());
-                else if(objectClass == Boolean.class)
+                else if(stepFieldClass == Boolean.class)
                     mapping.put(entry.getKey(), (Boolean) entry.getValue());
-                else if(objectClass == Float.class)
+                else if(stepFieldClass == Float.class)
                     mapping.put(entry.getKey(), (Float) entry.getValue());
-                if(objectClass == Double.class)
+                if(stepFieldClass == Double.class)
                     mapping.put(entry.getKey(), (Double) entry.getValue());
-                else if(objectClass == Integer.class)
+                else if(stepFieldClass == Integer.class)
                     mapping.put(entry.getKey(), (Integer) entry.getValue());
+                else
+                    logger.log(Level.WARNING, stepFieldClass.getName() + "is not supported at this time.");
             }
 
-            try {
-                Configurator configurator = Configurator.lookup(clazz);
-                if (configurator != null) {
-                    stepObject = configurator.configure(mapping);
-                }
-                else{
-                    throw new IllegalStateException("Cannot find a configurator for " + step.getStepName() + "step.");
-                }
-            } catch (ConfiguratorException e) {
-                e.printStackTrace();
+            Configurator configurator = Configurator.lookup(clazz);
+            if (configurator != null) {
+                stepObject = configurator.configure(mapping);
+            }
+            else{
+                throw new IllegalStateException("No step with name '" + step.getStepName() +
+                        "' exist. Have you installed required plugin.");
             }
         }
 
-        if(stepObject == null){
-            return null;
-        }
-
-        listener.getLogger().println(Snippetizer.object2Groovy(stepObject));
         snippet = Snippetizer.object2Groovy(stepObject) + "\n";
         return snippet;
     }
@@ -228,7 +210,9 @@ public class PipelineSnippetGenerator {
             ArrayList<String> archiveArtifacts,
             GitConfig gitConfig,
             String findbugs
-    ){
+    ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
+            InvocationTargetException, NoSuchFieldException
+    {
         String snippet = "stage('" + stage.getName() + "') {\n";
 
         snippet += "\tsteps {\n";

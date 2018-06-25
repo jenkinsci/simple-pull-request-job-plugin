@@ -21,11 +21,12 @@ stages:
     - name: Build
       steps:
         - stepName: sh
-          defalutParameter: ./scripts/hello
+          parameters:
+            script: './scripts/hello'
     - name: Tests
       steps:
         - stepName: sh
-          defalutParameter: ./scripts/hello
+          defaultParameter: ./scripts/hello
 
 archiveArtifacts:
     - Jenkinsfile.yaml

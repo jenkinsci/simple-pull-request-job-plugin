@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class Step {
     private String stepName;
-    private String defalutParameter;
+    private String defaultParameter;
     private HashMap<String, Object> parameters;
 
     Step(){
@@ -19,16 +19,16 @@ public class Step {
         else{
             String[] str = stepName.split(" ", 0);
             this.stepName = str[0];
-            this.defalutParameter = str[1];
+            this.defaultParameter = str[1];
 
-            if(this.defalutParameter.startsWith("'") || this.defalutParameter.startsWith("\""))
-                this.defalutParameter = this.defalutParameter.substring(1, this.defalutParameter.length() - 1);
+            if(this.defaultParameter.startsWith("'") || this.defaultParameter.startsWith("\""))
+                this.defaultParameter = this.defaultParameter.substring(1, this.defaultParameter.length() - 1);
         }
     }
 
     Step(AbstractMap.SimpleEntry<String, String> stepNameAndDefaultParameter){
             stepName = stepNameAndDefaultParameter.getKey();
-            defalutParameter = stepNameAndDefaultParameter.getValue();
+            defaultParameter = stepNameAndDefaultParameter.getValue();
     }
 
     public String getStepName() {
@@ -47,11 +47,11 @@ public class Step {
         this.parameters = parameters;
     }
 
-    public String getDefalutParameter() {
-        return defalutParameter;
+    public String getDefaultParameter() {
+        return defaultParameter;
     }
 
-    public void setDefalutParameter(String defalutParameter) {
-        this.defalutParameter = defalutParameter;
+    public void setDefaultParameter(String defaultParameter) {
+        this.defaultParameter = defaultParameter;
     }
 }

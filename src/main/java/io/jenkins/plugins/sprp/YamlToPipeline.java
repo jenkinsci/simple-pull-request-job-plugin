@@ -5,13 +5,19 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
+import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 
 public class YamlToPipeline {
-    public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener){
+    public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException,
+            IllegalAccessException, NoSuchFieldException {
         StringBuilder script;
         final String newLine = "\n";
         int numberOfTabs = 0;
@@ -21,7 +27,7 @@ public class YamlToPipeline {
         if(yamlPipeline == null)
             return "";
 
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(listener);
+        PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
 
         script = new StringBuilder("pipeline {\n");
         numberOfTabs++;
@@ -55,7 +61,8 @@ public class YamlToPipeline {
     }
 
     public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener){
-        Yaml yaml = new Yaml();
+        CustomClassLoaderConstructor constr = new CustomClassLoaderConstructor(this.getClass().getClassLoader());
+        Yaml yaml = new Yaml(constr);
         try {
             YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, io.jenkins.plugins.sprp.models.YamlPipeline.class);
 

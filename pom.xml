@@ -96,7 +96,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.18</version>
+            <version>1.21</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -156,7 +156,7 @@
         <dependency>
             <groupId>io.jenkins</groupId>
             <artifactId>configuration-as-code</artifactId>
-            <version>0.7-alpha</version>
+            <version>0.8-alpha</version>
         </dependency>
     </dependencies>
 
