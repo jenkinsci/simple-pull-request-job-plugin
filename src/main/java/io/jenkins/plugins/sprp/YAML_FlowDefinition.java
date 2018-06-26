@@ -37,6 +37,7 @@ import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
@@ -92,24 +93,27 @@ public class YAML_FlowDefinition extends FlowDefinition {
         if (scmSource == null) {
             throw new IllegalStateException(branch.getSourceId() + " not found");
         }
+
+        this.gitConfig = new GitConfig();
+
         SCMHead head = branch.getHead();
+
+        if("Pull Request".equals(head.getPronoun())){
+            ChangeRequestSCMHead2 changeRequestSCMHead2 = (ChangeRequestSCMHead2) branch.getHead();
+            head = changeRequestSCMHead2.getTarget();
+        }
+
         SCMRevision tip = scmSource.fetch(head, listener);
+
         if(tip == null)
             throw new IllegalStateException("Cannot determine the revision.");
+
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
-        this.gitConfig = new GitConfig();
-        this.gitConfig.setGitBranch(property.getBranch().getName());
-
-        if(gitConfig.getGitBranch().startsWith("PR-")){
-            this.gitConfig.setGitBranch(getBranchForPR(gitSCM));
-            if(this.gitConfig.getGitBranch() == null)
-                throw new IllegalStateException("Cannot determine the name of target branch.");
-        }
-
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
         this.gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
+        this.gitConfig.setGitBranch(head.getName());
 
         String script;
         try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
@@ -126,71 +130,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         listener.getLogger().println(script);
         return new CpsFlowExecution(script, false, owner);
-    }
-
-    private String getBranchForPR(GitSCM gitSCM){
-        for(String urc: getCleanRefSpecs(gitSCM.getUserRemoteConfigs())) {
-            if(!urc.contains("PR-")) {
-                return getBranchName(urc);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * A refSpec is similar to: {@code +refs/heads/master:refs/remotes/origin/master}.
-     * {@code getCleanRefSpecs} removes all the trailing spaces and unwanted '+' symbols from refSpecs.
-     *
-     * @param userRemoteConfigs {@link UserRemoteConfig} Remote configurations of target repo.
-     * @return List<String> List of strings containing refSpecs without trailing spaces and '+' symbols.
-     */
-    private List<String> getCleanRefSpecs(List<UserRemoteConfig> userRemoteConfigs){
-        List<String> refSpecs = new ArrayList<>();
-
-        for(UserRemoteConfig urc: userRemoteConfigs) {
-            for (String singleRefSpec : urc.getRefspec().split("\\+", 0)) {
-                if (!singleRefSpec.equals("")) {
-                    refSpecs.add(singleRefSpec);
-                }
-            }
-        }
-
-        return refSpecs;
-    }
-
-    /**
-     * Bitbucket generates following two similar refSpecs for pull request:
-     * {@code refs/heads/abhishekg1128/readmemd-edited-online-with-bitbucket-1529079381853:refs/remotes/origin/PR-1}
-     * {@code refs/heads/master:refs/remotes/upstream/master}
-     *
-     * And GitHub generates following two similar refspecs in single string"
-     * {@code +refs/pull/3/head:refs/remotes/origin/PR-3 +refs/heads/master:refs/remotes/origin/master}
-     * {@code getCleanRefSpecs} removes all the trailing spaces and unwanted '+' symbols from refSpecs.
-     *
-     * As branch name can contain {@code '/'}, this function splits the refSpec provided as parameter with
-     * {@code '/'} and look for {@code upstream} and {@code origin} keyword, when anyone of the two found
-     * assumes that all the remaining elements correspond to name of the branch.
-     *
-     * @param refSpec The refSpec from which a branch name is extracted.
-     * @return String Name of branch.
-     */
-    private String getBranchName(String refSpec){
-        boolean done = false;
-        String[] refSpecArray = refSpec.split("/");
-        StringBuilder branchName = new StringBuilder();
-        for(int i = 0; i < refSpecArray.length && !done; i++){
-            if(refSpecArray[i].equals("upstream") || refSpecArray[i].equals("origin")){
-                for(int j = i + 1; j < refSpecArray.length; j++) {
-                    branchName.append(refSpecArray[j]).append("/");
-                }
-
-                branchName = new StringBuilder(branchName.substring(0, branchName.length() - 1));
-                done = true;
-            }
-        }
-
-        return branchName.toString();
     }
 
     @Extension
