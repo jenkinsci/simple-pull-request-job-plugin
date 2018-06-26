@@ -37,6 +37,7 @@ import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.mixin.ChangeRequestSCMHead2;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinitionDescriptor;
@@ -92,24 +93,27 @@ public class YAML_FlowDefinition extends FlowDefinition {
         if (scmSource == null) {
             throw new IllegalStateException(branch.getSourceId() + " not found");
         }
+
+        this.gitConfig = new GitConfig();
+
         SCMHead head = branch.getHead();
+
+        if("Pull Request".equals(head.getPronoun())){
+            ChangeRequestSCMHead2 changeRequestSCMHead2 = (ChangeRequestSCMHead2) branch.getHead();
+            head = changeRequestSCMHead2.getTarget();
+        }
+
         SCMRevision tip = scmSource.fetch(head, listener);
+
         if(tip == null)
             throw new IllegalStateException("Cannot determine the revision.");
+
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
-        this.gitConfig = new GitConfig();
-        this.gitConfig.setGitBranch(property.getBranch().getName());
-
-        if(gitConfig.getGitBranch().startsWith("PR-")){
-            this.gitConfig.setGitBranch(getBranchForPR(gitSCM));
-            if(this.gitConfig.getGitBranch() == null)
-                throw new IllegalStateException("Cannot determine the name of target branch.");
-        }
-
         this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
         this.gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
+        this.gitConfig.setGitBranch(head.getName());
 
         String script;
         try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
