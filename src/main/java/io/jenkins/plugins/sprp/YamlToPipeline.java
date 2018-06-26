@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +27,8 @@ public class YamlToPipeline {
         if(yamlPipeline == null)
             return "";
 
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
+        // Passing a dummy launcher to detect if the machine is Unix or not
+        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
 
         script = new StringBuilder("pipeline {\n");
         numberOfTabs++;

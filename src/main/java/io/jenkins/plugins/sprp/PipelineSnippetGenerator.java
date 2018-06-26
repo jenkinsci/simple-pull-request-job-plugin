@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp;
 
+import hudson.Launcher;
 import hudson.model.Descriptor;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
@@ -22,9 +23,10 @@ import java.util.logging.Logger;
 
 public class PipelineSnippetGenerator {
     static private Logger logger = java.util.logging.Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
+    private Launcher launcher;
 
-    PipelineSnippetGenerator(){
-
+    PipelineSnippetGenerator(Launcher launcher){
+        this.launcher = launcher;
     }
 
     public String shellScript(ArrayList<String> paths){
@@ -152,11 +154,32 @@ public class PipelineSnippetGenerator {
         return snippet.toString();
     }
 
+    public boolean isUnix(){
+        return this.launcher.isUnix();
+    }
+
+    private String completeShellScriptPath(String scriptPath){
+        if (isUnix()) {
+            return scriptPath + ".sh";
+        } else {
+            return scriptPath + ".bat";
+        }
+    }
+
     private String stepConfigurator(Step step)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
             InstantiationException, ConfiguratorException, NoSuchFieldException {
         String snippet;
         Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
+
+        if(step.getStepName().equals("sh")){
+            if(step.getDefaultParameter() != null) {
+                step.setDefaultParameter(completeShellScriptPath(step.getDefaultParameter()));
+            }
+            else{
+                step.getParameters().put("script", completeShellScriptPath(step.getParameters().get("script").toString()));
+            }
+        }
 
         if(stepDescriptor == null)
             throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
@@ -217,10 +240,10 @@ public class PipelineSnippetGenerator {
         String snippet = "stage('" + stage.getName() + "') {\n";
 
         snippet += "\tsteps {\n";
-        // Todo: needs to be fixed now only
         snippet += "\t\t" + addTabs(getSteps(stage.getSteps()), 2);
         snippet += "\t}\n";
 
+        // This condition is to generate Success, Failure and Always steps after steps finished executing.
         if(stage.getFailure() != null
                 || stage.getSuccess() != null
                 || stage.getAlways() != null

@@ -11,17 +11,27 @@ public class Step {
     private HashMap<String, Object> parameters;
 
     Step(){
-
+        stepName = "";
     }
 
     Step(String stepName){
-        System.out.println("stepname: " + stepName);
         if(!stepName.contains(" "))
             this.stepName = stepName;
         else{
             String[] str = stepName.split(" ", 0);
             this.stepName = str[0];
-            this.defaultParameter = str[1];
+
+            boolean foundSecond = false;
+
+            for(int i = 1; i < str.length && !foundSecond; i++){
+                if(!str[i].equals(" ")) {
+                    foundSecond = true;
+                    this.defaultParameter = str[i];
+                }
+            }
+
+            if(!foundSecond)
+                throw new IllegalStateException("No parameter provided for step " + this.stepName);
 
             if(this.defaultParameter.startsWith("'") || this.defaultParameter.startsWith("\""))
                 this.defaultParameter = this.defaultParameter.substring(1, this.defaultParameter.length() - 1);
