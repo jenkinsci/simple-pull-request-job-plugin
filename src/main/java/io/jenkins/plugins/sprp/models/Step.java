@@ -33,7 +33,10 @@ public class Step {
             if(!foundSecond)
                 throw new IllegalStateException("No parameter provided for step " + this.stepName);
 
-            if(this.defaultParameter.startsWith("'") || this.defaultParameter.startsWith("\""))
+            // If below condition is failed, assuming there are now quotes. If the input is illegal then it
+            // will be caught in PipelineSnippetGenerator class
+            if((this.defaultParameter.startsWith("'") && this.defaultParameter.endsWith("'"))
+                    || (this.defaultParameter.startsWith("\"") && this.defaultParameter.endsWith("\"")))
                 this.defaultParameter = this.defaultParameter.substring(1, this.defaultParameter.length() - 1);
         }
     }
