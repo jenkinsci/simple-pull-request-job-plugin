@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -20,7 +19,6 @@ public class YamlToPipeline {
             IllegalAccessException, NoSuchFieldException {
         StringBuilder script;
         final String newLine = "\n";
-        int numberOfTabs = 0;
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
@@ -28,35 +26,34 @@ public class YamlToPipeline {
             return "";
 
         // Passing a dummy launcher to detect if the machine is Unix or not
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
+        PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
 
         script = new StringBuilder("pipeline {\n");
-        numberOfTabs++;
 
         // Adding outer agent
-        script.append(psg.getTabString(numberOfTabs)).append("agent ").append(psg.addTabs(psg.getAgent(yamlPipeline.getAgent()), numberOfTabs));
+        script.append("agent ").append(psg.getAgent(yamlPipeline.getAgent()));
 
         // Stages begin
-        script.append("\tstages {" + newLine);
-        numberOfTabs++;
+        script.append("stages {" + newLine);
 
         for(Stage stage: yamlPipeline.getStages()){
-            script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getStage(
+            script.append(psg.getStage(
                     stage,
                     yamlPipeline.getBuildResultPaths(),
                     yamlPipeline.getTestResultPaths(),
                     yamlPipeline.getArchiveArtifacts(),
                     gitConfig,
-                    yamlPipeline.getFindBugs()), numberOfTabs));
+                    yamlPipeline.getFindBugs()));
         }
 
 //        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
 //                yamlPipeline.getPublishArtifacts()), numberOfTabs));
 
-        numberOfTabs--;
-        script.append(psg.getTabString(numberOfTabs)).append("}\n");
-        numberOfTabs--;
-        script.append(psg.getTabString(numberOfTabs)).append("}\n");
+        script.append("}\n");
+        script.append("}\n");
+
+        script = psg.autoAddTabs(script);
+
 
         return script.toString();
     }
@@ -67,6 +64,7 @@ public class YamlToPipeline {
         try {
             YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, io.jenkins.plugins.sprp.models.YamlPipeline.class);
 
+            // TODO: Just for testing purpose, needs to be removed before release
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));
 
