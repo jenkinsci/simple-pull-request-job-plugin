@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Stage {
     private String name;
-    private ArrayList<String> scripts;
+    private ArrayList<Step> steps;
     private ArrayList<String> failure;
     private ArrayList<String> success;
     private ArrayList<String> always;
@@ -35,12 +35,12 @@ public class Stage {
         this.always = always;
     }
 
-    public ArrayList<String> getScripts() {
-        return scripts;
+    public ArrayList<Step> getSteps() {
+        return steps;
     }
 
-    public void setScripts(ArrayList<String> scripts) {
-        this.scripts = scripts;
+    public void setSteps(ArrayList<Step> steps) {
+        this.steps = steps;
     }
 
     public ArrayList<String> getSuccess() {
