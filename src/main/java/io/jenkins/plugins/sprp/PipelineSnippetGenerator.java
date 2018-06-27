@@ -6,13 +6,16 @@ import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.jenkinsci.plugins.casc.model.Mapping;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -167,10 +170,19 @@ public class PipelineSnippetGenerator {
     }
 
     private String stepConfigurator(Step step)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+            throws IllegalAccessException, InvocationTargetException,
             InstantiationException, ConfiguratorException, NoSuchFieldException {
+        if(step == null)
+            return "\n";
+
         String snippet;
+        Object stepObject = null;
         Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
+
+        if(stepDescriptor == null)
+            throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
+
+        Class clazz = stepDescriptor.clazz;
 
         if(step.getStepName().equals("sh")){
             if(step.getDefaultParameter() != null) {
@@ -181,17 +193,41 @@ public class PipelineSnippetGenerator {
             }
         }
 
-        if(stepDescriptor == null)
-            throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
-
-        Class clazz = stepDescriptor.clazz;
-
-        Object stepObject = null;
-
         // Right now all the DefaultParameter of a step are considered to be string.
         if(step.getDefaultParameter() != null){
-            Constructor c = clazz.getConstructor(String.class);
-            stepObject = c.newInstance(step.getDefaultParameter());
+            Constructor[] constructors = clazz.getConstructors();
+            boolean foundSuitableConstructor = false;
+
+            for(int i = 0; i < constructors.length && !foundSuitableConstructor; i++){
+                Annotation[] annotations = constructors[i].getAnnotations();
+                for(int j = 0; j < annotations.length && !foundSuitableConstructor; j++){
+                    if(annotations[j].annotationType() == DataBoundConstructor.class && constructors[i].getParameterCount() == 1){
+                        foundSuitableConstructor = true;
+                        Class parameterClass = constructors[i].getParameters()[0].getType();
+
+                        if(parameterClass == String.class)
+                            stepObject = constructors[i].newInstance(step.getDefaultParameter());
+                        else if(parameterClass == Boolean.class)
+                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
+                        else if(parameterClass == Float.class)
+                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
+                        if(parameterClass == Double.class)
+                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
+                        else if(parameterClass == Integer.class)
+                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
+                        else if(parameterClass == boolean.class)
+                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
+                        else if(parameterClass == float.class)
+                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
+                        else if(parameterClass == double.class)
+                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
+                        else if(parameterClass == int.class)
+                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
+                        else
+                            logger.log(Level.WARNING, parameterClass.getName() + "is not supported at this time.");
+                    }
+                }
+            }
         }
         else{
             Mapping mapping = new Mapping();
@@ -222,6 +258,9 @@ public class PipelineSnippetGenerator {
                         "' exist. Have you installed required plugin.");
             }
         }
+
+        if (stepObject == null)
+            throw new IllegalStateException("Cannot find a step named " + step.getStepName() + " with suitable parameters.");
 
         snippet = Snippetizer.object2Groovy(stepObject) + "\n";
         return snippet;
