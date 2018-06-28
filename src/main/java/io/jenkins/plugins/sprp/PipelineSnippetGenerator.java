@@ -6,7 +6,6 @@ import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
-import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
@@ -28,8 +27,8 @@ public class PipelineSnippetGenerator {
     static private Logger logger = java.util.logging.Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
     private Launcher launcher;
 
-    PipelineSnippetGenerator(){
-        this.launcher = Jenkins.get().createLauncher(null);
+    PipelineSnippetGenerator(Launcher launcher){
+        this.launcher = launcher;
     }
 
     public String shellScript(ArrayList<String> paths){

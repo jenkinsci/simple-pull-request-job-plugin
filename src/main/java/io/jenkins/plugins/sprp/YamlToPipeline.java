@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -26,7 +27,7 @@ public class YamlToPipeline {
             return "";
 
         // Passing a dummy launcher to detect if the machine is Unix or not
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator();
+        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
 
         script = new StringBuilder("pipeline {\n");
 
