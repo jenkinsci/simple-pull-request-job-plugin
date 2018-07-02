@@ -13,13 +13,13 @@ import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 public class YamlToPipeline {
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException,
             IllegalAccessException, NoSuchFieldException {
-        StringBuilder script;
-        final String newLine = "\n";
+        ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
@@ -29,16 +29,16 @@ public class YamlToPipeline {
         // Passing a dummy launcher to detect if the machine is Unix or not
         PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
 
-        script = new StringBuilder("pipeline {\n");
+        scriptLines.add("pipeline {");
 
         // Adding outer agent
-        script.append("agent ").append(psg.getAgent(yamlPipeline.getAgent()));
+        scriptLines.addAll(psg.getAgent(yamlPipeline.getAgent()));
 
         // Stages begin
-        script.append("stages {" + newLine);
+        scriptLines.add("stages {");
 
         for(Stage stage: yamlPipeline.getStages()){
-            script.append(psg.getStage(
+            scriptLines.addAll(psg.getStage(
                     stage,
                     yamlPipeline.getBuildResultPaths(),
                     yamlPipeline.getTestResultPaths(),
@@ -47,16 +47,13 @@ public class YamlToPipeline {
                     yamlPipeline.getFindBugs()));
         }
 
-//        script.append(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
+//        scriptLines.add(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
 //                yamlPipeline.getPublishArtifacts()), numberOfTabs));
 
-        script.append("}\n");
-        script.append("}\n");
+        scriptLines.add("}");
+        scriptLines.add("}");
 
-        script = psg.autoAddTabs(script);
-
-
-        return script.toString();
+        return psg.autoAddTabs(scriptLines);
     }
 
     public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener){

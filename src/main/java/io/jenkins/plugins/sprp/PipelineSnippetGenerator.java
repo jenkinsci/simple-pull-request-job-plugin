@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,80 +65,78 @@ public class PipelineSnippetGenerator {
         return snippet;
     }
 
-    public String getAgent(Agent agent){
-        String snippet = "";
+    public List<String> getAgent(Agent agent){
+        ArrayList<String> agentLines = new ArrayList<>();
 
         if(agent == null){
-            snippet = "any\n";
+            agentLines.add("agent any");
         }
         else if(agent.getAnyOrNone() != null)
-            snippet = agent.getAnyOrNone() + "\n";
+            agentLines.add("agent " + agent.getAnyOrNone());
         else {
+            agentLines.add("agent {");
+
             if(agent.getDockerImage() != null){
-                snippet += "{\n";
-                snippet += "docker {\n";
-                snippet += "image '" + agent.getDockerImage() + "'\n";
+                agentLines.add("docker {");
+                agentLines.add("image '" + agent.getDockerImage() + "'");
 
                 if (agent.getArgs() != null)
-                    snippet += "args '" + agent.getArgs() + "'\n";
+                    agentLines.add("args '" + agent.getArgs() + "'");
 
-                snippet += "alwaysPull " + agent.getAlwaysPull() + "\n";
-                snippet += getCommonOptionsOfAgent(agent);
-                snippet += "}\n";
-                snippet += "}\n";
+                agentLines.add("alwaysPull " + agent.getAlwaysPull() + "");
+                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
             }
             else if(agent.getDockerfile() != null){
-                snippet += "{\n";
-                snippet += "dockerfile {\n";
-                snippet += "filename '" + agent.getDockerfile() + "'\n";
+                agentLines.add("dockerfile {");
+                agentLines.add("filename '" + agent.getDockerfile() + "'");
 
                 if (agent.getDir() != null)
-                    snippet += "dir '" + agent.getDir() + "'\n";
+                    agentLines.add("dir '" + agent.getDir() + "'");
 
                 if (agent.getArgs() != null)
-                    snippet += "additionalBuildArgs '" + agent.getArgs() + "'\n";
+                    agentLines.add("additionalBuildArgs '" + agent.getArgs() + "'");
 
-                snippet += getCommonOptionsOfAgent(agent);
-                snippet += "}\n";
-                snippet += "}\n";
+                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
             }
             else {
-                snippet += "{\n";
-                snippet += "node{\n";
-                snippet += getCommonOptionsOfAgent(agent);
-                snippet += "}\n";
-                snippet += "}\n";
+                agentLines.add("node{");
+                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
             }
+
+            agentLines.add("}");
         }
 
-        return snippet;
+        return agentLines;
     }
 
-    public String getArchiveArtifactsSnippet(ArrayList<String> paths){
-        StringBuilder snippet = new StringBuilder();
+    public List<String> getArchiveArtifactsSnippet(ArrayList<String> paths){
+        ArrayList<String> snippetLines = new ArrayList<>();
 
         for(String p: paths)
-            snippet.append("archiveArtifacts artifacts: '").append(p).append("'\n");
+            snippetLines.add("archiveArtifacts artifacts: '" + p + "'");
 
-        return snippet.toString();
+        return snippetLines;
     }
 
-    public String getPublishReportSnippet(ArrayList<String> paths){
-        StringBuilder snippet = new StringBuilder();
+    public List<String> getPublishReportSnippet(ArrayList<String> paths){
+        ArrayList<String> snippetLines = new ArrayList<>();
 
         for(String p: paths)
-            snippet.append("junit '").append(p).append("'\n");
+            snippetLines.add("junit '" + p + "'");
 
-        return snippet.toString();
+        return snippetLines;
     }
 
-    private String getSteps(ArrayList<Step> steps) throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
-        StringBuilder snippet = new StringBuilder();
+    private List<String> getSteps(ArrayList<Step> steps) throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
+        ArrayList<String> snippetLines = new ArrayList<>();
 
         for(Step step: steps)
-            snippet.append(stepConfigurator(step));
+            snippetLines.add(stepConfigurator(step));
 
-        return snippet.toString();
+        return snippetLines;
     }
 
     public boolean isUnix(){
@@ -245,11 +244,11 @@ public class PipelineSnippetGenerator {
         if (stepObject == null)
             throw new IllegalStateException("Cannot find a step named " + step.getStepName() + " with suitable parameters.");
 
-        snippet = Snippetizer.object2Groovy(stepObject) + "\n";
+        snippet = Snippetizer.object2Groovy(stepObject);
         return snippet;
     }
 
-    public String getStage(
+    public List<String> getStage(
             Stage stage,
             ArrayList<String> buildResultPaths,
             ArrayList<String> testResultPaths,
@@ -259,11 +258,12 @@ public class PipelineSnippetGenerator {
     ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
             InvocationTargetException, NoSuchFieldException
     {
-        String snippet = "stage('" + stage.getName() + "') {\n";
+        ArrayList<String> snippetLines = new ArrayList<>();
+        snippetLines.add("stage('" + stage.getName() + "') {");
 
-        snippet += "steps {\n";
-        snippet += getSteps(stage.getSteps());
-        snippet += "}\n";
+        snippetLines.add("steps {");
+        snippetLines.addAll(getSteps(stage.getSteps()));
+        snippetLines.add("}");
 
         // This condition is to generate Success, Failure and Always steps after steps finished executing.
         if(stage.getFailure() != null
@@ -271,100 +271,116 @@ public class PipelineSnippetGenerator {
                 || stage.getAlways() != null
                 || (stage.getName().equals("Build") &&
                         (archiveArtifacts != null || buildResultPaths != null || findbugs != null))
-                || stage.getName().equals("Tests") && (testResultPaths != null)) {
-            snippet += "post {\n";
+                || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
+            snippetLines.add("post {");
 
             if (stage.getSuccess() != null
                     || (stage.getName().equals("Build"))
                     || stage.getName().equals("Tests") && (testResultPaths != null)// || gitConfig.getGitUrl() != null)
                     )
             {
-                snippet += "success {\n";
+                snippetLines.add("success {");
                 if (stage.getName().equals("Build")) {
-                    snippet += "archiveArtifacts artifacts: '**/target/*.jar'\n";
+                    snippetLines.add("archiveArtifacts artifacts: '**/target/*.jar'");
                     if(archiveArtifacts != null)
-                        snippet += getArchiveArtifactsSnippet(archiveArtifacts);
+                        snippetLines.addAll(getArchiveArtifactsSnippet(archiveArtifacts));
 
                     if(buildResultPaths != null)
-                        snippet += getPublishReportSnippet(buildResultPaths);
+                        snippetLines.addAll(getPublishReportSnippet(buildResultPaths));
                 }
                 if (stage.getName().equals("Tests")) {
                     if(testResultPaths != null)
-                        snippet += getPublishReportSnippet(testResultPaths);
+                        snippetLines.addAll(getPublishReportSnippet(testResultPaths));
 //                    TODO Abhishek: code is commented out for testing purposes, it will be reinstated later
 //                    if(gitConfig.getGitUrl() != null)
-//                        snippet += "" + addTabs("gitPush " +
+//                        snippetLines.add("gitPush " +
 //                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
 //                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-//                                "branch: \"" + gitConfig.getGitBranch() + "\"" +
-//                                "\n", 3);
+//                                "branch: \"" + gitConfig.getGitBranch() + "\"" );
                 }
                 if(stage.getSuccess() != null)
-                    snippet += shellScript(stage.getSuccess());
-                snippet += "}\n";
+                    snippetLines.add(shellScript(stage.getSuccess()));
+                snippetLines.add("}");
             }
             if (stage.getAlways() != null || (findbugs != null && stage.getName().equals("Tests"))) {
-                snippet += "always {\n";
+                snippetLines.add("always {");
                 if(findbugs != null && stage.getName().equals("Tests"))
-                    snippet += "findbugs pattern: '" + findbugs + "'\n";
+                    snippetLines.add("findbugs pattern: '" + findbugs + "'");
 
                 if(stage.getAlways() != null)
-                    snippet += shellScript(stage.getAlways());
-                snippet += "}\n";
+                    snippetLines.add(shellScript(stage.getAlways()));
+                snippetLines.add("}");
             }
             if (stage.getFailure() != null) {
-                snippet += "failure {\n";
-                snippet += shellScript(stage.getFailure());
-                snippet += "}\n";
+                snippetLines.add("failure {");
+                snippetLines.add(shellScript(stage.getFailure()));
+                snippetLines.add("}");
             }
 
-            snippet += "}\n";
+            snippetLines.add("}");
         }
-        snippet += "}\n";
+        snippetLines.add("}");
 
-        return snippet;
+        return snippetLines;
     }
 
-    public String getPublishArtifactStage(ArtifactPublishingConfig config,
+    public List<String> getPublishArtifactStage(ArtifactPublishingConfig config,
                                           ArrayList<HashMap<String, String>> publishArtifacts){
         if(config == null)
-            return "";
+            return null;
 
-        StringBuilder snippet = new StringBuilder("stage('Publish Artifact') {\n");
+        ArrayList<String> snippetLines = new ArrayList<>();
 
-        snippet.append("steps {\n");
-        snippet.append("" + "withCredentials([file(credentialsId: '").append(config.getCredentialId()).append("', variable: 'FILE')]) {\n");
+        snippetLines.add("steps {");
+        snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
 
         for(HashMap<String, String> artifact: publishArtifacts){
-            snippet.append("sh 'scp -i $FILE ").append(artifact.get("from")).append(" ").append(config.getUser()).append("@").append(config.getHost()).append(":").append(artifact.get("to")).append("'\n");
+            snippetLines.add("sh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'");
         }
 
-        snippet.append("}\n");
-        snippet.append("}\n");
-        snippet.append("}\n");
+        snippetLines.add("}");
+        snippetLines.add("}");
+        snippetLines.add("}");
 
-        return snippet.toString();
+        return snippetLines;
     }
 
-    public StringBuilder autoAddTabs(StringBuilder pipelineScript){
+    public String autoAddTabs(ArrayList<String> snippetLines){
         int numOfTabs = 0;
+        StringBuilder snippet = new StringBuilder();
 
-        for(int i = 0; i < pipelineScript.length(); i++){
-            if(pipelineScript.charAt(i) == '{'){
-                numOfTabs++;
-            }
+//        for(int i = 0; i < snippetLines.length(); i++){
+//            if(snippetLines.charAt(i) == '{'){
+//                numOfTabs++;
+//            }
+//
+//            if(i + 1 != snippetLines.length() &&
+//                    snippetLines.charAt(i) == '\n' &&
+//                    snippetLines.charAt(i + 1) == '}'){
+//                numOfTabs--;
+//            }
+//
+//            if(snippetLines.charAt(i) == '\n'){
+//                snippetLines.insert(i + 1, StringUtils.repeat("\t", numOfTabs));
+//            }
+//        }
 
-            if(i + 1 != pipelineScript.length() &&
-                    pipelineScript.charAt(i) == '\n' &&
-                    pipelineScript.charAt(i + 1) == '}'){
+        for(String str: snippetLines){
+            if(str.startsWith("}")){
                 numOfTabs--;
             }
 
-            if(pipelineScript.charAt(i) == '\n'){
-                pipelineScript.insert(i + 1, StringUtils.repeat("\t", numOfTabs));
+            if(numOfTabs != 0){
+                snippet.append(StringUtils.repeat("\t", numOfTabs));
+            }
+
+            snippet.append(str).append("\n");
+
+            if(str.endsWith("{")){
+                numOfTabs++;
             }
         }
 
-        return pipelineScript;
+        return snippet.toString();
     }
 }
