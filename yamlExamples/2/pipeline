@@ -9,8 +9,8 @@ pipeline{
     }
 
     tools{
-        tool_1 'tool_1_name'
-        tool_2 'tool_2_name'
+        maven 'maven_3.0.1'
+        tool_2 'jdk8'
     }
 
     environment{

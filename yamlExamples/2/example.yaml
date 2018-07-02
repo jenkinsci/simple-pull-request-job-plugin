@@ -5,15 +5,18 @@ agent:
   dockerImage: maven:3-alpine
   args: -v /tmp:/tmp
   # so that tools will be a prt of agent only
+  # tools needs to be defined in the tool configuration
   tools:
-    tool_1 : tool_1_name
-    tool_2 : tool_2_name
+    maven : maven_3.0.1
+    jdk : jdk8
 
 # if true PR will be fetched and build will be started without merging it to the target branch
 # else PR will be merged to the target branch and then build will be started.
+# default value will be false
 buildPROnly: true
 
 # Push PR changes to the target branch if the build will be success.
+# default value will be false
 pushPROnSuccess: true
 
 # Location of reports to be published
@@ -37,7 +40,7 @@ scripts:
   - path_2
   - path_3
 
-PRApprovers:
+prApprovers:
   - username1
   - username2
   - username3

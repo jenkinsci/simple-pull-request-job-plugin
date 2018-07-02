@@ -2,17 +2,21 @@
 agent:
   label: my_label
   customWorkspace: path_to_workspace
-
-# tools needs to be defined in the tool configuration
-tools:
-  maven : maven_3.0.1
-  jdk : jdk8
+  dockerImage: maven:3-alpine
+  args: -v /tmp:/tmp
+  # so that tools will be a prt of agent only
+  # tools needs to be defined in the tool configuration
+  tools:
+    maven : maven_3.0.1
+    jdk : jdk8
 
 # if true PR will be fetched and build will be started without merging it to the target branch
 # else PR will be merged to the target branch and then build will be started.
+# default value will be false
 buildPROnly: true
 
 # Push PR changes to the target branch if the build will be success.
+# default value will be false
 pushPROnSuccess: true
 
 # Location of reports to be published
@@ -24,18 +28,22 @@ environment:
   variable_1: value_1
   variable_2: value_2
 
-  # name of bindings will be like https://jenkins.io/doc/pipeline/steps/credentials-binding/
+  # Credentials contains only two fields. See pipeline file for how it will be used
   credentials:
     - credentialid : fileCredentialId
       variable : FILE
     - credentialid : usernamePasswordId
-      usernameVariable: USERNAME
-      passwordVariable: PASSWORD
+      variable : LOGIN
 
-scripts:
-  - path_1
-  - path_2
-  - path_3
+logic:
+  - sh: path_1
+
+  # stepName:
+  #   parameter1: value1
+  #   parameter2: value2
+  - echo:
+      message: 'Hello world'
+  - sh: path_3
 
 prApprovers:
   - username1
