@@ -1,0 +1,42 @@
+# same as defined in current version
+agent:
+  label: my_label
+  customWorkspace: path_to_workspace
+
+tools:
+  tool_1 : tool_1_name
+  tool_2 : tool_2_name
+
+# if true PR will be fetched and build will be started without merging it to the target branch
+# else PR will be merged to the target branch and then build will be started.
+buildPROnly: true
+
+# Push PR changes to the target branch if the build will be success.
+pushPROnSuccess: true
+
+# Location of reports to be published
+reports:
+  - location_of_report_1
+  - location_of_report_2
+
+environment:
+  variable_1: value_1
+  variable_2: value_2
+
+  # name of bindings will be like https://jenkins.io/doc/pipeline/steps/credentials-binding/
+  credentials:
+    - credentialid : fileCredentialId
+      variable : FILE
+    - credentialid : usernamePasswordId
+      usernameVariable: USERNAME
+      passwordVariable: PASSWORD
+
+scripts:
+  - path_1
+  - path_2
+  - path_3
+
+PRApprovers:
+  - username1
+  - username2
+  - username3
