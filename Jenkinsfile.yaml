@@ -18,11 +18,12 @@ stages:
     - name: First
       steps:
         - sh './scripts/hello'
+        - sleep 5
     - name: Build
       steps:
         - stepName: sh
           parameters:
-            script: './scripts/hello'
+            script: './scripts/build'
     - name: Tests
       steps:
         - stepName: sh
