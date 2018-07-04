@@ -10,14 +10,22 @@ agent:
     maven : maven_3.0.1
     jdk : jdk8
 
-# if true PR will be fetched and build will be started without merging it to the target branch
-# else PR will be merged to the target branch and then build will be started.
-# default value will be false
-buildPROnly: true
+config:
+  # if true PR will be fetched and build will be started without merging it to the target branch
+  # else PR will be merged to the target branch and then build will be started.
+  # default value will be false
+  buildPROnly: true
 
-# Push PR changes to the target branch if the build will be success.
-# default value will be false
-pushPROnSuccess: true
+  # Push PR changes to the target branch if the build will be success.
+  # default value will be false
+  pushPROnSuccess: true
+
+  prApprovers:
+    - username1
+    - username2
+    - username3
+
+# above two option should be in config section.
 
 # Location of reports to be published
 reports:
@@ -35,7 +43,7 @@ environment:
     - credentialid : usernamePasswordId
       variable : LOGIN
 
-logic:
+steps:
   - sh: path_1
 
   # stepName:
@@ -44,8 +52,3 @@ logic:
   - echo:
       message: 'Hello world'
   - sh: path_3
-
-prApprovers:
-  - username1
-  - username2
-  - username3
