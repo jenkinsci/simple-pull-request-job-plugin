@@ -2,6 +2,8 @@ package io.jenkins.plugins.sprp.models;
 
 import org.eclipse.jgit.errors.NotSupportedException;
 
+import java.util.HashMap;
+
 public class Agent {
     private String label;
     private String customWorkspace;
@@ -12,6 +14,7 @@ public class Agent {
     private String dir;
     private boolean reuseNode;
     private String anyOrNone;
+    private HashMap<String, String> tools;
 
     Agent(){}
 
@@ -92,5 +95,13 @@ public class Agent {
 
     public String getAnyOrNone() {
         return anyOrNone;
+    }
+
+    public void setTools(HashMap<String, String> tools) {
+        this.tools = tools;
+    }
+
+    public HashMap<String, String> getTools() {
+        return tools;
     }
 }

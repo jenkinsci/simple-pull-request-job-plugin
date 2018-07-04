@@ -3,17 +3,20 @@ package io.jenkins.plugins.sprp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.sprp.models.Stage;
+import io.jenkins.plugins.sprp.models.Step;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class YamlToPipeline {
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
@@ -31,17 +34,19 @@ public class YamlToPipeline {
 
         scriptLines.add("pipeline {");
 
-        // Adding outer agent
+        // Adding outer agent and tools section
         scriptLines.addAll(psg.getAgent(yamlPipeline.getAgent()));
+
+        // Adding environment
+        scriptLines.addAll(psg.getEnvironment(yamlPipeline.getEnvironment()));
 
         // Stages begin
         scriptLines.add("stages {");
 
-        for(Stage stage: yamlPipeline.getStages()){
+        for(Map.Entry<String, ArrayList<Step>> stage: yamlPipeline.getStages().entrySet()) {
             scriptLines.addAll(psg.getStage(
                     stage,
-                    yamlPipeline.getBuildResultPaths(),
-                    yamlPipeline.getTestResultPaths(),
+                    yamlPipeline.getReports(),
                     yamlPipeline.getArchiveArtifacts(),
                     gitConfig,
                     yamlPipeline.getFindBugs()));

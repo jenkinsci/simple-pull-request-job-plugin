@@ -4,7 +4,8 @@ import hudson.Launcher;
 import hudson.model.Descriptor;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
-import io.jenkins.plugins.sprp.models.Stage;
+import io.jenkins.plugins.sprp.models.Environment;
+import io.jenkins.plugins.sprp.models.Credential;
 import io.jenkins.plugins.sprp.models.Step;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.casc.Configurator;
@@ -74,9 +75,9 @@ public class PipelineSnippetGenerator {
         else if(agent.getAnyOrNone() != null)
             agentLines.add("agent " + agent.getAnyOrNone());
         else {
-            agentLines.add("agent {");
 
             if(agent.getDockerImage() != null){
+                agentLines.add("agent {");
                 agentLines.add("docker {");
                 agentLines.add("image '" + agent.getDockerImage() + "'");
 
@@ -86,8 +87,10 @@ public class PipelineSnippetGenerator {
                 agentLines.add("alwaysPull " + agent.getAlwaysPull() + "");
                 agentLines.add(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
+                agentLines.add("}");
             }
             else if(agent.getDockerfile() != null){
+                agentLines.add("agent {");
                 agentLines.add("dockerfile {");
                 agentLines.add("filename '" + agent.getDockerfile() + "'");
 
@@ -99,17 +102,62 @@ public class PipelineSnippetGenerator {
 
                 agentLines.add(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
+                agentLines.add("}");
             }
-            else {
+            else if(agent.getLabel() != null && agent.getCustomWorkspace() != null){
+                agentLines.add("agent {");
                 agentLines.add("node{");
                 agentLines.add(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
+                agentLines.add("}");
+            }
+            else {
+                agentLines.add("agent any");
             }
 
-            agentLines.add("}");
         }
 
+        agentLines.addAll(getTools(agent.getTools()));
+
         return agentLines;
+    }
+
+    public List<String> getTools(HashMap<String, String> tools){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(tools == null)
+            return snippetLines;
+
+        snippetLines.add("tools {");
+
+        for(Map.Entry<String, String> entry: tools.entrySet()){
+            snippetLines.add(entry.getKey() + " '" + entry.getValue() + "'");
+        }
+
+        snippetLines.add("}");
+
+        return snippetLines;
+    }
+
+    public List<String> getEnvironment(Environment environment){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(environment == null || (environment.getVariables() == null && environment.getCredentials() == null))
+            return snippetLines;
+
+        snippetLines.add("environment {");
+
+        for(Map.Entry<String, String> entry: environment.getVariables().entrySet()){
+            snippetLines.add(entry.getKey() + " = '" + entry.getValue() + "'");
+        }
+
+        for(Credential credential: environment.getCredentials()){
+            snippetLines.add(credential.getVariable() + " = credentials('" + credential.getCredentialId() + "')");
+        }
+
+        snippetLines.add("}");
+
+        return snippetLines;
     }
 
     public List<String> getArchiveArtifactsSnippet(ArrayList<String> paths){
@@ -206,7 +254,7 @@ public class PipelineSnippetGenerator {
                         else if(parameterClass == int.class)
                             stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
                         else
-                            logger.log(Level.WARNING, parameterClass.getName() + "is not supported at this time.");
+                            logger.log(Level.WARNING, parameterClass.getName() + " is not supported at this time.");
                     }
                 }
             }
@@ -249,76 +297,23 @@ public class PipelineSnippetGenerator {
     }
 
     public List<String> getStage(
-            Stage stage,
+            Map.Entry<String, ArrayList<Step>> stage,
             ArrayList<String> buildResultPaths,
-            ArrayList<String> testResultPaths,
             ArrayList<String> archiveArtifacts,
             GitConfig gitConfig,
             String findbugs
     ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
             InvocationTargetException, NoSuchFieldException
     {
+        String stageName = stage.getKey();
+        ArrayList<Step> steps = stage.getValue();
         ArrayList<String> snippetLines = new ArrayList<>();
-        snippetLines.add("stage('" + stage.getName() + "') {");
+        snippetLines.add("stage('" + stageName + "') {");
 
         snippetLines.add("steps {");
-        snippetLines.addAll(getSteps(stage.getSteps()));
+        snippetLines.addAll(getSteps(steps));
         snippetLines.add("}");
 
-        // This condition is to generate Success, Failure and Always steps after steps finished executing.
-        if(stage.getFailure() != null
-                || stage.getSuccess() != null
-                || stage.getAlways() != null
-                || (stage.getName().equals("Build") &&
-                        (archiveArtifacts != null || buildResultPaths != null || findbugs != null))
-                || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
-            snippetLines.add("post {");
-
-            if (stage.getSuccess() != null
-                    || (stage.getName().equals("Build"))
-                    || stage.getName().equals("Tests") && (testResultPaths != null)// || gitConfig.getGitUrl() != null)
-                    )
-            {
-                snippetLines.add("success {");
-                if (stage.getName().equals("Build")) {
-                    snippetLines.add("archiveArtifacts artifacts: '**/target/*.jar'");
-                    if(archiveArtifacts != null)
-                        snippetLines.addAll(getArchiveArtifactsSnippet(archiveArtifacts));
-
-                    if(buildResultPaths != null)
-                        snippetLines.addAll(getPublishReportSnippet(buildResultPaths));
-                }
-                if (stage.getName().equals("Tests")) {
-                    if(testResultPaths != null)
-                        snippetLines.addAll(getPublishReportSnippet(testResultPaths));
-//                    TODO Abhishek: code is commented out for testing purposes, it will be reinstated later
-//                    if(gitConfig.getGitUrl() != null)
-//                        snippetLines.add("gitPush " +
-//                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
-//                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-//                                "branch: \"" + gitConfig.getGitBranch() + "\"" );
-                }
-                if(stage.getSuccess() != null)
-                    snippetLines.add(shellScript(stage.getSuccess()));
-                snippetLines.add("}");
-            }
-            if (stage.getAlways() != null || (findbugs != null && stage.getName().equals("Tests"))) {
-                snippetLines.add("always {");
-                if(findbugs != null && stage.getName().equals("Tests"))
-                    snippetLines.add("findbugs pattern: '" + findbugs + "'");
-
-                if(stage.getAlways() != null)
-                    snippetLines.add(shellScript(stage.getAlways()));
-                snippetLines.add("}");
-            }
-            if (stage.getFailure() != null) {
-                snippetLines.add("failure {");
-                snippetLines.add(shellScript(stage.getFailure()));
-                snippetLines.add("}");
-            }
-
-            snippetLines.add("}");
-        }
         snippetLines.add("}");
 
         return snippetLines;
