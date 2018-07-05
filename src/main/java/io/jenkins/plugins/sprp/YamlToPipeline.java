@@ -3,7 +3,7 @@ package io.jenkins.plugins.sprp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.sprp.models.Step;
+import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class YamlToPipeline {
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
@@ -43,7 +42,7 @@ public class YamlToPipeline {
         // Stages begin
         scriptLines.add("stages {");
 
-        for(Map.Entry<String, ArrayList<Step>> stage: yamlPipeline.getStages().entrySet()) {
+        for(Stage stage: yamlPipeline.getStages()) {
             scriptLines.addAll(psg.getStage(
                     stage,
                     yamlPipeline.getReports(),
@@ -52,10 +51,13 @@ public class YamlToPipeline {
                     yamlPipeline.getFindBugs()));
         }
 
-//        scriptLines.add(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
-//                yamlPipeline.getPublishArtifacts()), numberOfTabs));
+//        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
+//                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
 
         scriptLines.add("}");
+
+        scriptLines.addAll(psg.getPostSection(yamlPipeline.getPost()));
+
         scriptLines.add("}");
 
         return psg.autoAddTabs(scriptLines);

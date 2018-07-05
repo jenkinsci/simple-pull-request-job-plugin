@@ -6,7 +6,9 @@ import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Environment;
 import io.jenkins.plugins.sprp.models.Credential;
+import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
+import io.jenkins.plugins.sprp.models.Post;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
@@ -20,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -117,7 +120,8 @@ public class PipelineSnippetGenerator {
 
         }
 
-        agentLines.addAll(getTools(agent.getTools()));
+        if(agent != null)
+            agentLines.addAll(getTools(agent.getTools()));
 
         return agentLines;
     }
@@ -160,6 +164,75 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
+    public List<String> getPostSection(Post postSection) throws NoSuchMethodException, ConfiguratorException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(postSection == null) {
+            return snippetLines;
+        }
+
+        snippetLines.add("post {");
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("aborted {");
+            snippetLines.addAll(getSteps(postSection.getAborted()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("always {");
+            snippetLines.addAll(getSteps(postSection.getAlways()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("changed {");
+            snippetLines.addAll(getSteps(postSection.getChanged()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("cleanup {");
+            snippetLines.addAll(getSteps(postSection.getCleanup()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("failure {");
+            snippetLines.addAll(getSteps(postSection.getFailure()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("fixed {");
+            snippetLines.addAll(getSteps(postSection.getFixed()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("regression {");
+            snippetLines.addAll(getSteps(postSection.getRegression()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("success {");
+            snippetLines.addAll(getSteps(postSection.getSuccess()));
+            snippetLines.add("}");
+        }
+
+        if(postSection.getAborted() != null){
+            snippetLines.add("unstable {");
+            snippetLines.addAll(getSteps(postSection.getUnstable()));
+            snippetLines.add("}");
+        }
+
+        snippetLines.add("}");
+
+        return snippetLines;
+    }
+
     public List<String> getArchiveArtifactsSnippet(ArrayList<String> paths){
         ArrayList<String> snippetLines = new ArrayList<>();
 
@@ -178,11 +251,13 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    private List<String> getSteps(ArrayList<Step> steps) throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
+    private List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException, NoSuchMethodException,
+            InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
-        for(Step step: steps)
-            snippetLines.add(stepConfigurator(step));
+        for(LinkedHashMap<String, Step> step: steps)
+            for(Map.Entry<String, Step> entry: step.entrySet())
+                snippetLines.add(stepConfigurator(entry.getValue()));
 
         return snippetLines;
     }
@@ -276,7 +351,7 @@ public class PipelineSnippetGenerator {
                 else if(stepFieldClass == Integer.class)
                     mapping.put(entry.getKey(), (Integer) entry.getValue());
                 else
-                    logger.log(Level.WARNING, stepFieldClass.getName() + "is not supported at this time.");
+                    logger.log(Level.WARNING, stepFieldClass.getName() + " is not supported at this time.");
             }
 
             Configurator configurator = Configurator.lookup(clazz);
@@ -297,7 +372,7 @@ public class PipelineSnippetGenerator {
     }
 
     public List<String> getStage(
-            Map.Entry<String, ArrayList<Step>> stage,
+            Stage stage,
             ArrayList<String> buildResultPaths,
             ArrayList<String> archiveArtifacts,
             GitConfig gitConfig,
@@ -305,21 +380,25 @@ public class PipelineSnippetGenerator {
     ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
             InvocationTargetException, NoSuchFieldException
     {
-        String stageName = stage.getKey();
-        ArrayList<Step> steps = stage.getValue();
+        String stageName = stage.getName();
+
         ArrayList<String> snippetLines = new ArrayList<>();
         snippetLines.add("stage('" + stageName + "') {");
 
+        snippetLines.addAll(getAgent(stage.getAgent()));
+
         snippetLines.add("steps {");
-        snippetLines.addAll(getSteps(steps));
+        snippetLines.addAll(getSteps(stage.getSteps()));
         snippetLines.add("}");
+
+        snippetLines.addAll(getPostSection(stage.getPost()));
 
         snippetLines.add("}");
 
         return snippetLines;
     }
 
-    public List<String> getPublishArtifactStage(ArtifactPublishingConfig config,
+    public List<String> getPublishReportsAndArtifactStage(ArrayList<String> reports, ArtifactPublishingConfig config,
                                           ArrayList<HashMap<String, String>> publishArtifacts){
         if(config == null)
             return null;
@@ -327,6 +406,7 @@ public class PipelineSnippetGenerator {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         snippetLines.add("steps {");
+        snippetLines.addAll(getPublishReportSnippet(reports));
         snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
 
         for(HashMap<String, String> artifact: publishArtifacts){

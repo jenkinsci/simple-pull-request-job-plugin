@@ -2,13 +2,11 @@ package io.jenkins.plugins.sprp.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class YamlPipeline {
     private Agent agent;
     private Configuration configuration;
-    private LinkedHashMap<String, ArrayList<Step>> stages;
+    private ArrayList<Stage> stages;
     private String gitCredentialId;
     private ArtifactPublishingConfig artifactPublishingConfig;
     private ArrayList<String> archiveArtifacts;
@@ -16,6 +14,7 @@ public class YamlPipeline {
     private ArrayList<HashMap<String, String>> publishArtifacts;
     private String findBugs;
     private Environment environment;
+    private Post post;
 
     YamlPipeline(){}
 
@@ -67,37 +66,12 @@ public class YamlPipeline {
         this.archiveArtifacts = archiveArtifacts;
     }
 
-    public LinkedHashMap<String, ArrayList<Step>> getStages() {
+    public ArrayList<Stage> getStages() {
         return stages;
     }
 
-    public void setStages(LinkedHashMap<String, ArrayList<Object>> passedStages) {
-        this.stages = new LinkedHashMap<String, ArrayList<Step>>();
-
-        for(Map.Entry<String, ArrayList<Object>> stage: passedStages.entrySet()){
-            ArrayList<Step> stepList = new ArrayList<>();
-
-            for(Object obj: stage.getValue()){
-                LinkedHashMap<String, Object> stepObj = (LinkedHashMap<String, Object>) obj;
-                Step step = new Step();
-
-                for(Map.Entry<String, Object> entry: stepObj.entrySet()){
-                    step.setStepName(entry.getKey());
-                    if(entry.getValue().getClass() == LinkedHashMap.class){
-                        step.setParameters((HashMap<String, Object>) entry.getValue());
-                    }
-                    else {
-                        step.setDefaultParameter(entry.getValue().toString());
-                    }
-                }
-
-                stepList.add(step);
-            }
-
-            stages.put(stage.getKey(), stepList);
-        }
-
-        System.out.println("asdfasdf");
+    public void setStages(ArrayList<Stage> passedStages) {
+        this.stages = passedStages;
     }
 
     public ArrayList<String> getReports() {
@@ -122,5 +96,13 @@ public class YamlPipeline {
 
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+    }
+
+    public Post getPost() {
+        return post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
     }
 }
