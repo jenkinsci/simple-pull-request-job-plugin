@@ -42,13 +42,25 @@ public class YamlToPipeline {
         // Stages begin
         scriptLines.add("stages {");
 
-        for(Stage stage: yamlPipeline.getStages()) {
-            scriptLines.addAll(psg.getStage(
-                    stage,
-                    yamlPipeline.getReports(),
-                    yamlPipeline.getArchiveArtifacts(),
-                    gitConfig,
-                    yamlPipeline.getFindBugs()));
+        if(yamlPipeline.getSteps() != null){
+            scriptLines.add("stage('Build') {");
+            scriptLines.add("steps {");
+
+            scriptLines.addAll(psg.getSteps(yamlPipeline.getSteps()));
+
+            scriptLines.add("}");
+            scriptLines.add("}");
+        }
+
+        if(yamlPipeline.getStages() != null) {
+            for (Stage stage : yamlPipeline.getStages()) {
+                scriptLines.addAll(psg.getStage(
+                        stage,
+                        yamlPipeline.getReports(),
+                        yamlPipeline.getArchiveArtifacts(),
+                        gitConfig,
+                        yamlPipeline.getFindBugs()));
+            }
         }
 
 //        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
@@ -72,6 +84,10 @@ public class YamlToPipeline {
             // TODO: Just for testing purpose, needs to be removed before release
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));
+
+            if(yamlPipeline.getStages() != null && yamlPipeline.getSteps() != null){
+                throw new IllegalStateException("Only one of 'steps' or 'stages' must be present in the YAML file.");
+            }
 
             return yamlPipeline;
         }

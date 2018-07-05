@@ -2,6 +2,7 @@ package io.jenkins.plugins.sprp.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class YamlPipeline {
     private Agent agent;
@@ -15,6 +16,7 @@ public class YamlPipeline {
     private String findBugs;
     private Environment environment;
     private Post post;
+    private ArrayList<LinkedHashMap<String, Step>> steps;
 
     YamlPipeline(){}
 
@@ -104,5 +106,13 @@ public class YamlPipeline {
 
     public void setPost(Post post) {
         this.post = post;
+    }
+
+    public ArrayList<LinkedHashMap<String, Step>> getSteps() {
+        return steps;
+    }
+
+    public void setSteps(ArrayList<LinkedHashMap<String, Object>> steps) {
+        this.steps = Stage.generateSteps(steps);
     }
 }

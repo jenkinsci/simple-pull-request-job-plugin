@@ -251,7 +251,7 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    private List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException, NoSuchMethodException,
+    List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException, NoSuchMethodException,
             InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
