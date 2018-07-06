@@ -9,7 +9,7 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>simple-pull-request-job</artifactId>
-    <version>alpha-1.0</version>
+    <version>1.0-alpha-1-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
@@ -140,22 +140,24 @@
         </dependency>
     </dependencies>
 
-    <!-- If you want this to appear on the wiki page:
+    <!-- If you want this to appear on the wiki page: -->
     <developers>
       <developer>
-        <id>bhacker</id>
-        <name>Bob Q. Hacker</name>
-        <email>bhacker@nowhere.net</email>
+        <id>gautamabhishek46</id>
+        <name>Abhishek Gautam</name>
+        <email>gautam.abhishek46@gmail.com</email>
       </developer>
-    </developers> -->
+    </developers>
 
-    <!-- Assuming you want to host on @jenkinsci:
+    <!-- Assuming you want to host on @jenkinsci: -->
     <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
+
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    </scm>    -->
+        <connection>scm:git:git://github.com/jenkinsci/simple-pull-request-job-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/simple-pull-request-job-plugin.git</developerConnection>
+        <url>https://github.com/jenkinsci/simple-pull-request-job-plugin</url>
+    </scm>
+
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
