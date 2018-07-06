@@ -388,7 +388,9 @@ public class PipelineSnippetGenerator {
         ArrayList<String> snippetLines = new ArrayList<>();
         snippetLines.add("stage('" + stageName + "') {");
 
-        snippetLines.addAll(getAgent(stage.getAgent()));
+        if (!stage.getAgent().getAnyOrNone().equals("any")) {
+            snippetLines.addAll(getAgent(stage.getAgent()));
+        }
 
         snippetLines.add("steps {");
         snippetLines.addAll(getSteps(stage.getSteps()));
@@ -403,20 +405,25 @@ public class PipelineSnippetGenerator {
 
     public List<String> getPublishReportsAndArtifactStage(ArrayList<String> reports, ArtifactPublishingConfig config,
                                           ArrayList<HashMap<String, String>> publishArtifacts){
-        if(config == null)
-            return null;
-
         ArrayList<String> snippetLines = new ArrayList<>();
 
+        if(reports == null && config == null)
+            return snippetLines;
+
+        snippetLines.add("stage('Publish reports & artifacts') {");
         snippetLines.add("steps {");
         snippetLines.addAll(getPublishReportSnippet(reports));
-        snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
 
-        for(HashMap<String, String> artifact: publishArtifacts){
-            snippetLines.add("sh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'");
+        if(config != null) {
+            snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
+
+            for (HashMap<String, String> artifact : publishArtifacts) {
+                snippetLines.add("sh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'");
+            }
+
+            snippetLines.add("}");
         }
 
-        snippetLines.add("}");
         snippetLines.add("}");
         snippetLines.add("}");
 

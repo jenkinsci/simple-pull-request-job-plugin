@@ -61,9 +61,8 @@ public class YamlToPipeline {
             }
         }
 
-//        TODO: Below code is commented temporarily and will be re-instantiated later
-//        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
-//                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
+        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
+                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
 
         // This stage will always be generated at last, because if anyone of the above stage fails then we
         // will not push the code to target branch
