@@ -47,8 +47,9 @@ public class YamlToPipeline {
                     yamlPipeline.getFindBugs()));
         }
 
-//        scriptLines.add(psg.getTabString(numberOfTabs)).append(psg.addTabs(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
-//                yamlPipeline.getPublishArtifacts()), numberOfTabs));
+        scriptLines.addAll(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
+                yamlPipeline.getPublishArtifacts()));
+
 
         scriptLines.add("}");
         scriptLines.add("}");

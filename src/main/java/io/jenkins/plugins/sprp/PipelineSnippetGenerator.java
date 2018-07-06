@@ -276,7 +276,7 @@ public class PipelineSnippetGenerator {
 
             if (stage.getSuccess() != null
                     || (stage.getName().equals("Build"))
-                    || stage.getName().equals("Tests") && (testResultPaths != null)// || gitConfig.getGitUrl() != null)
+                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
                     )
             {
                 snippetLines.add("success {");
@@ -291,12 +291,12 @@ public class PipelineSnippetGenerator {
                 if (stage.getName().equals("Tests")) {
                     if(testResultPaths != null)
                         snippetLines.addAll(getPublishReportSnippet(testResultPaths));
-//                    TODO Abhishek: code is commented out for testing purposes, it will be reinstated later
-//                    if(gitConfig.getGitUrl() != null)
-//                        snippetLines.add("gitPush " +
-//                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
-//                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-//                                "branch: \"" + gitConfig.getGitBranch() + "\"" );
+
+                    if(gitConfig.getGitUrl() != null)
+                        snippetLines.add("gitPush " +
+                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+                                "url: \"" + gitConfig.getGitUrl() + "\"," +
+                                "branch: \"" + gitConfig.getGitBranch() + "\"" );
                 }
                 if(stage.getSuccess() != null)
                     snippetLines.add(shellScript(stage.getSuccess()));
@@ -324,13 +324,13 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    public List<String> getPublishArtifactStage(ArtifactPublishingConfig config,
-                                          ArrayList<HashMap<String, String>> publishArtifacts){
-        if(config == null)
-            return null;
-
+    public List<String> getPublishArtifactStage(ArtifactPublishingConfig config, ArrayList<HashMap<String, String>> publishArtifacts){
         ArrayList<String> snippetLines = new ArrayList<>();
 
+        if(config == null)
+            return snippetLines;
+
+        snippetLines.add("stage('Publish Artifacts') {");
         snippetLines.add("steps {");
         snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
 
@@ -348,22 +348,6 @@ public class PipelineSnippetGenerator {
     public String autoAddTabs(ArrayList<String> snippetLines){
         int numOfTabs = 0;
         StringBuilder snippet = new StringBuilder();
-
-//        for(int i = 0; i < snippetLines.length(); i++){
-//            if(snippetLines.charAt(i) == '{'){
-//                numOfTabs++;
-//            }
-//
-//            if(i + 1 != snippetLines.length() &&
-//                    snippetLines.charAt(i) == '\n' &&
-//                    snippetLines.charAt(i + 1) == '}'){
-//                numOfTabs--;
-//            }
-//
-//            if(snippetLines.charAt(i) == '\n'){
-//                snippetLines.insert(i + 1, StringUtils.repeat("\t", numOfTabs));
-//            }
-//        }
 
         for(String str: snippetLines){
             if(str.startsWith("}")){
