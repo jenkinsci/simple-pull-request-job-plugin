@@ -120,8 +120,9 @@ public class PipelineSnippetGenerator {
 
         }
 
-        if(agent != null)
+        if(agent != null) {
             agentLines.addAll(getTools(agent.getTools()));
+        }
 
         return agentLines;
     }
@@ -129,8 +130,9 @@ public class PipelineSnippetGenerator {
     public List<String> getTools(HashMap<String, String> tools){
         ArrayList<String> snippetLines = new ArrayList<>();
 
-        if(tools == null)
+        if(tools == null) {
             return snippetLines;
+        }
 
         snippetLines.add("tools {");
 
@@ -146,8 +148,9 @@ public class PipelineSnippetGenerator {
     public List<String> getEnvironment(Environment environment){
         ArrayList<String> snippetLines = new ArrayList<>();
 
-        if(environment == null || (environment.getVariables() == null && environment.getCredentials() == null))
+        if(environment == null || (environment.getVariables() == null && environment.getCredentials() == null)) {
             return snippetLines;
+        }
 
         snippetLines.add("environment {");
 
@@ -423,22 +426,6 @@ public class PipelineSnippetGenerator {
     public String autoAddTabs(ArrayList<String> snippetLines){
         int numOfTabs = 0;
         StringBuilder snippet = new StringBuilder();
-
-//        for(int i = 0; i < snippetLines.length(); i++){
-//            if(snippetLines.charAt(i) == '{'){
-//                numOfTabs++;
-//            }
-//
-//            if(i + 1 != snippetLines.length() &&
-//                    snippetLines.charAt(i) == '\n' &&
-//                    snippetLines.charAt(i + 1) == '}'){
-//                numOfTabs--;
-//            }
-//
-//            if(snippetLines.charAt(i) == '\n'){
-//                snippetLines.insert(i + 1, StringUtils.repeat("\t", numOfTabs));
-//            }
-//        }
 
         for(String str: snippetLines){
             if(str.startsWith("}")){

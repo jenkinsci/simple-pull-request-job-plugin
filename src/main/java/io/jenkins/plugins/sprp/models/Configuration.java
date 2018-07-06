@@ -3,8 +3,8 @@ package io.jenkins.plugins.sprp.models;
 import java.util.ArrayList;
 
 public class Configuration {
-    private boolean buildPROnly;
-    private boolean pushPROnSuccess;
+    private boolean buildPrOnly;
+    private boolean pushPrOnSuccess;
     private ArrayList<String> prApprovers;
 
     public ArrayList<String> getPrApprovers() {
@@ -15,19 +15,19 @@ public class Configuration {
         this.prApprovers = prApprovers;
     }
 
-    public boolean isBuildPROnly() {
-        return buildPROnly;
+    public boolean isBuildPrOnly() {
+        return buildPrOnly;
     }
 
-    public void setBuildPROnly(boolean buildPROnly) {
-        this.buildPROnly = buildPROnly;
+    public void setBuildPrOnly(boolean buildPrOnly) {
+        this.buildPrOnly = buildPrOnly;
     }
 
-    public boolean isPushPROnSuccess() {
-        return pushPROnSuccess;
+    public boolean isPushPrOnSuccess() {
+        return pushPrOnSuccess;
     }
 
-    public void setPushPROnSuccess(boolean pushPROnSuccess) {
-        this.pushPROnSuccess = pushPROnSuccess;
+    public void setPushPrOnSuccess(boolean pushPrOnSuccess) {
+        this.pushPrOnSuccess = pushPrOnSuccess;
     }
 }

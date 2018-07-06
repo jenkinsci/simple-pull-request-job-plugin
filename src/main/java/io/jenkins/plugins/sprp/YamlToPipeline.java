@@ -10,8 +10,6 @@ import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -63,6 +61,7 @@ public class YamlToPipeline {
             }
         }
 
+//        TODO: Below code is commented temporarily and will be re-instantiated later
 //        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
 //                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
 
