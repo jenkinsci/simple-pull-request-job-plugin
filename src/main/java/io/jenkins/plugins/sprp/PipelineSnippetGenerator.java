@@ -426,11 +426,15 @@ public class PipelineSnippetGenerator {
     public List<String> gitPushStage(GitConfig gitConfig){
         ArrayList<String> snippetLines = new ArrayList<>();
 
+        snippetLines.add("stage('Git Push') {");
+        snippetLines.add("steps {");
         snippetLines.add("gitPush " +
                 "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
                 "url: \"" + gitConfig.getGitUrl() + "\"," +
                 "branch: \"" + gitConfig.getGitBranch() + "\"");
 
+        snippetLines.add("}");
+        snippetLines.add("}");
         return snippetLines;
     }
 
