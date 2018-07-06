@@ -1,4 +1,3 @@
-gitCredentialId: dummyGitRepo
 artifactPublishingConfig:
     host: 192.32.52.12
     user: user53
@@ -6,13 +5,13 @@ artifactPublishingConfig:
 
 agent: any
 
-#buildResultPaths:
-#    - path-1
-#    - path-2
+buildResultPaths:
+    - path-1
+    - path-2
 
-#testResultPaths:
-#    - path-1
-#    - path-2
+testResultPaths:
+    - path-1
+    - path-2
 
 stages:
     - name: First
