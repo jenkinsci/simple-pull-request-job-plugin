@@ -289,14 +289,16 @@ public class PipelineSnippetGenerator {
                         snippetLines.addAll(getPublishReportSnippet(buildResultPaths));
                 }
                 if (stage.getName().equals("Tests")) {
-                    if(testResultPaths != null)
+                    if (testResultPaths != null) {
                         snippetLines.addAll(getPublishReportSnippet(testResultPaths));
+                    }
 
-                    if(gitConfig.getGitUrl() != null)
+                    if (gitConfig.getGitUrl() != null) {
                         snippetLines.add("gitPush " +
                                 "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
                                 "url: \"" + gitConfig.getGitUrl() + "\"," +
-                                "branch: \"" + gitConfig.getGitBranch() + "\"" );
+                                "branch: \"" + gitConfig.getGitBranch() + "\"");
+                    }
                 }
                 if(stage.getSuccess() != null)
                     snippetLines.add(shellScript(stage.getSuccess()));
