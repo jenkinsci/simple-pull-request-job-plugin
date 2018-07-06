@@ -423,6 +423,17 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
+    public List<String> gitPushStage(GitConfig gitConfig){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        snippetLines.add("gitPush " +
+                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+                "url: \"" + gitConfig.getGitUrl() + "\"," +
+                "branch: \"" + gitConfig.getGitBranch() + "\"");
+
+        return snippetLines;
+    }
+
     public String autoAddTabs(ArrayList<String> snippetLines){
         int numOfTabs = 0;
         StringBuilder snippet = new StringBuilder();

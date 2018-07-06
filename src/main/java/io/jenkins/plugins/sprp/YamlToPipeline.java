@@ -65,6 +65,12 @@ public class YamlToPipeline {
 //        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
 //                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
 
+        // This stage will always be generated at last, because if anyone of the above stage fails then we
+        // will not push the code to target branch
+        if(yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()){
+            scriptLines.addAll(psg.gitPushStage(gitConfig));
+        }
+
         scriptLines.add("}");
 
         scriptLines.addAll(psg.getPostSection(yamlPipeline.getPost()));
