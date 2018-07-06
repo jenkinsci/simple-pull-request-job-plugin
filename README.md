@@ -43,12 +43,12 @@ stages:
     - name: First
       steps:
         - sh './scripts/hello'
-        - sleep 5
+          defaultParameter: ./scripts/hello
     - name: Build
       steps:
         - stepName: sh
           parameters:
-            script: './scripts/build'
+            script: ./scripts/build
     - name: Tests
       steps:
         - stepName: sh
@@ -58,7 +58,7 @@ archiveArtifacts:
     - Jenkinsfile.yaml
     - scripts/hello.sh
 
-artifactPublishingConfig:
+artifactPublishingConfig:  # Details are not correct
     host: 192.32.52.12
     user: user53
     credentialId: dummyGitRepo
@@ -102,6 +102,11 @@ Note:
 1. Agent arguments are same as declarative pipeline agent arguments except "dockerImage".
 2. Don't use dockerImage and dockerfile parameters simultaneously, else it will result in errors.
 3. The build will be started for pull request and normal branches after branch indexing.
+4. Sections such as tools, post, when, ect are not supported at this point in time.
+
+If there is a need to call a script then use "sh" step name and just give the relative path of 
+the script without extension (.bat or .sh). plugin will detect the machine (linux or windows) and 
+add the extension on its own.
 
 Users can declare any number of stages but stages named 'Build' and 'Tests' must be declared by the
 user. These two stages can contain simple echo steps also. It is needed because at this stage
