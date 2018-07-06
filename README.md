@@ -26,3 +26,92 @@ and the build will be successful except one git push step at the last. Everyone 
 also use "Scan Repository Now" and "Build Now" (for all branches and PRs).
 
 [Demo repository](https://github.com/gautamabhishek46/dummy)
+
+#### Jenkinsfile.yaml example
+```yaml
+agent: any
+
+buildResultPaths:
+    - path-1
+    - path-2
+
+testResultPaths:
+    - path-1
+    - path-2
+
+stages:
+    - name: First
+      steps:
+        - sh './scripts/hello'
+          defaultParameter: ./scripts/hello
+    - name: Build
+      steps:
+        - stepName: sh
+          parameters:
+            script: ./scripts/build
+    - name: Tests
+      steps:
+        - stepName: sh
+          defaultParameter: ./scripts/hello
+
+archiveArtifacts:
+    - Jenkinsfile.yaml
+    - scripts/hello.sh
+
+artifactPublishingConfig:  # Details are not correct
+    host: 192.32.52.12
+    user: user53
+    credentialId: dummyGitRepo
+
+publishArtifacts:
+    - from: Jenkinsfile.yaml
+      to: ~/archives
+    - from: scripts/hello.sh
+      to: ~/archives
+
+```
+
+#### Simple agent example
+```yaml
+agent:
+    label: 'my-label'
+    customWorkspace: 'path-to-workspace'
+```
+
+
+#### Agent with docker image example
+```yaml
+agent:
+    label: 'my-label'
+    customWorkspace: 'path-to-workspace'
+    dockerImage: 'image-name'
+    args: 'some argument' # optional
+```
+
+#### Agent with dockerfile example
+```yaml
+agent:
+    label: 'my-label'
+    customWorkspace: 'path-to-workspace'
+    dockerfile: 'image-name'
+    dir: 'path-to-directory'  
+    args: 'some argument' # optional
+```
+
+Note: 
+1. Agent arguments are same as declarative pipeline agent arguments except "dockerImage".
+2. Don't use dockerImage and dockerfile parameters simultaneously, else it will result in errors.
+3. The build will be started for pull request and normal branches after branch indexing.
+4. Sections such as tools, post, when, ect are not supported at this point in time.
+
+If there is a need to call a script then use "sh" step name and just give the relative path of 
+the script without extension (.bat or .sh). plugin will detect the machine (linux or windows) and 
+add the extension on its own.
+
+Users can declare any number of stages but stages named 'Build' and 'Tests' must be declared by the
+user. These two stages can contain simple echo steps also. It is needed because at this stage
+plugin generate post sections in these two stages to archive artifacts, publish reports and to
+push the changes to target branch.
+
+Only xml reports are supported at this point in time.
+
