@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
-    <artifactId>simple-pull-request-job-plugin</artifactId>
+    <artifactId>simple-pull-request-job</artifactId>
     <version>alpha-1.0</version>
     <packaging>hpi</packaging>
     <properties>
