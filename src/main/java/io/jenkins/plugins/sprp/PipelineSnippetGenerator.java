@@ -341,7 +341,7 @@ public class PipelineSnippetGenerator {
         else {
             throw new NotSupportedException(object.getClass() + " is not supported.");
         }
-
+        
         return scalar;
     }
 
