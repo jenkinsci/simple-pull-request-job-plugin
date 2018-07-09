@@ -1,19 +1,19 @@
 # same as defined in current version
-agent:
+agent: any
 #  label: my_label
 #  customWorkspace: path_to_workspace
 #  dockerImage: maven:3-alpine
 #  args: -v /tmp:/tmp
   # so that tools will be a prt of agent only
   # tools needs to be defined in the tool configuration
-  tools:
-    maven : maven_3.0.1
-    jdk : jdk8
+#  tools:
+#    maven : maven_3.0.1
+#    jdk : jdk8
 
 configuration:
   # Push PR changes to the target branch if the build will be success.
   # default value will be false
-  pushPrOnSuccess: true
+  pushPrOnSuccess: false
 
   prApprovers:
     - username1
@@ -43,10 +43,31 @@ stages:
   - name: satge1
     agent: any
     steps:
-      - sh: "scripts/hello"
-      - sh: "scripts/hello"
       - sh:
           script: "scripts/hello"
+      - sh: "scripts/hello"
+      - sleep:
+          time: 2
+#          unit: SECONDS
+      - sleep: 2
+      - junit:
+          testResults: "target/**.xml"
+          allowEmptyResults: true
+          testDataPublishers:
+            - AutomateTestDataPublisher
+            - JunitResultPublisher:
+                urlOverride: "urlOverride"
+#            - JiraTestDataPublisher:
+#                configs:
+#                  - SelectableFields:
+#                      fieldKey: "SelectableFields key"
+#                      value: "SelectableFields value"
+#
+#                projectKey: "project key"
+#                issueType: "issue type"
+#                autoRaiseIssue: true
+
+
     post:
       failure:
         - sh: "scripts/hello"

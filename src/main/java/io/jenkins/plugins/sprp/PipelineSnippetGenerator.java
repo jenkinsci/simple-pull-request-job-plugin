@@ -10,14 +10,16 @@ import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
 import io.jenkins.plugins.sprp.models.Post;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.jenkinsci.plugins.casc.model.Mapping;
+import org.jenkinsci.plugins.casc.model.Scalar;
+import org.jenkinsci.plugins.casc.model.Sequence;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
-import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -25,11 +27,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PipelineSnippetGenerator {
-    static private Logger logger = java.util.logging.Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
+    static private Logger logger = Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
     private Launcher launcher;
 
     PipelineSnippetGenerator(Launcher launcher){
@@ -167,8 +167,8 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    public List<String> getPostSection(Post postSection) throws NoSuchMethodException, ConfiguratorException,
-            InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+    public List<String> getPostSection(Post postSection) throws ConfiguratorException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NotSupportedException, NoSuchMethodException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         if(postSection == null) {
@@ -236,11 +236,20 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    public List<String> getArchiveArtifactsSnippet(ArrayList<String> paths){
+    public List<String> getArchiveArtifactsStage(ArrayList<String> paths){
         ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(paths == null)
+            return snippetLines;
+
+        snippetLines.add("stage('Archive artifacts') {");
+        snippetLines.add("steps {");
 
         for(String p: paths)
             snippetLines.add("archiveArtifacts artifacts: '" + p + "'");
+
+        snippetLines.add("}");
+        snippetLines.add("}");
 
         return snippetLines;
     }
@@ -254,8 +263,8 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException, NoSuchMethodException,
-            InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
+    List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException,
+            InstantiationException, ConfiguratorException, IllegalAccessException, NotSupportedException, NoSuchMethodException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         for(LinkedHashMap<String, Step> step: steps)
@@ -279,13 +288,13 @@ public class PipelineSnippetGenerator {
 
     private String stepConfigurator(Step step)
             throws IllegalAccessException, InvocationTargetException,
-            InstantiationException, ConfiguratorException, NoSuchFieldException {
+            InstantiationException, ConfiguratorException, NotSupportedException, NoSuchMethodException {
         if(step == null)
             return "\n";
 
         String snippet;
         Object stepObject = null;
-        Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
+        Descriptor<org.jenkinsci.plugins.workflow.steps.Step> stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
 
         if(stepDescriptor == null)
             throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
@@ -294,70 +303,29 @@ public class PipelineSnippetGenerator {
 
         if(step.getStepName().equals("sh")){
             if(step.getDefaultParameter() != null) {
-                step.setDefaultParameter(completeShellScriptPath(step.getDefaultParameter()));
+                step.setDefaultParameter(completeShellScriptPath((String) step.getDefaultParameter()));
             }
             else{
                 step.getParameters().put("script", completeShellScriptPath(step.getParameters().get("script").toString()));
             }
         }
 
-        // Right now all the DefaultParameter of a step are considered to be string.
         if(step.getDefaultParameter() != null){
-            Constructor[] constructors = clazz.getConstructors();
-            boolean foundSuitableConstructor = false;
+            Constructor constructor = Configurator.getDataBoundConstructor(clazz);
 
-            for(int i = 0; i < constructors.length && !foundSuitableConstructor; i++){
-                Annotation[] annotations = constructors[i].getAnnotations();
-                for(int j = 0; j < annotations.length && !foundSuitableConstructor; j++){
-                    if(annotations[j].annotationType() == DataBoundConstructor.class && constructors[i].getParameterCount() == 1){
-                        foundSuitableConstructor = true;
-                        Class parameterClass = constructors[i].getParameters()[0].getType();
-
-                        if(parameterClass == String.class)
-                            stepObject = constructors[i].newInstance(step.getDefaultParameter());
-                        else if(parameterClass == Boolean.class)
-                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
-                        else if(parameterClass == Float.class)
-                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
-                        if(parameterClass == Double.class)
-                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
-                        else if(parameterClass == Integer.class)
-                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
-                        else if(parameterClass == boolean.class)
-                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
-                        else if(parameterClass == float.class)
-                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
-                        else if(parameterClass == double.class)
-                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
-                        else if(parameterClass == int.class)
-                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
-                        else
-                            logger.log(Level.WARNING, parameterClass.getName() + " is not supported at this time.");
-                    }
-                }
+            if(constructor != null && constructor.getParameterCount() == 1){
+                stepObject = constructor.newInstance(step.getDefaultParameter());
+            }
+            else{
+                throw new NoSuchMethodException("No suitable constructor found for default parameter of step "
+                        + step.getStepName());
             }
         }
         else{
-            Mapping mapping = new Mapping();
-
-            for(Map.Entry<String, Object> entry: step.getParameters().entrySet()){
-                Class stepFieldClass = clazz.getDeclaredField(entry.getKey()).getType();
-
-                if(stepFieldClass == String.class)
-                    mapping.put(entry.getKey(), (String) entry.getValue());
-                else if(stepFieldClass == Boolean.class)
-                    mapping.put(entry.getKey(), (Boolean) entry.getValue());
-                else if(stepFieldClass == Float.class)
-                    mapping.put(entry.getKey(), (Float) entry.getValue());
-                if(stepFieldClass == Double.class)
-                    mapping.put(entry.getKey(), (Double) entry.getValue());
-                else if(stepFieldClass == Integer.class)
-                    mapping.put(entry.getKey(), (Integer) entry.getValue());
-                else
-                    logger.log(Level.WARNING, stepFieldClass.getName() + " is not supported at this time.");
-            }
+            Mapping mapping = doMappingForMap(step.getParameters());
 
             Configurator configurator = Configurator.lookup(clazz);
+
             if (configurator != null) {
                 stepObject = configurator.configure(mapping);
             }
@@ -367,22 +335,66 @@ public class PipelineSnippetGenerator {
             }
         }
 
-        if (stepObject == null)
-            throw new IllegalStateException("Cannot find a step named " + step.getStepName() + " with suitable parameters.");
-
         snippet = Snippetizer.object2Groovy(stepObject);
         return snippet;
     }
 
-    public List<String> getStage(
-            Stage stage,
-            ArrayList<String> buildResultPaths,
-            ArrayList<String> archiveArtifacts,
-            GitConfig gitConfig,
-            String findbugs
-    ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
-            InvocationTargetException, NoSuchFieldException
-    {
+    private Mapping doMappingForMap(Map<String, Object> map) throws NotSupportedException {
+        Mapping mapping = new Mapping();
+
+        for(Map.Entry<String, Object> entry: map.entrySet()){
+            if(entry.getValue() instanceof Map){
+                mapping.put(entry.getKey(), doMappingForMap((Map<String, Object>) entry.getValue()));
+            }
+            else if(entry.getValue() instanceof List){
+                mapping.put(entry.getKey(), doMappingForSequence((List) entry.getValue()));
+            }
+            else {
+                mapping.put(entry.getKey(), doMappingForScalar(entry.getValue()));
+            }
+        }
+
+        return mapping;
+    }
+
+    private Scalar doMappingForScalar(Object object) throws NotSupportedException {
+        Scalar scalar;
+
+        if(object instanceof String)
+            scalar = new Scalar((String) object);
+        else if(object instanceof Number)
+            scalar = new Scalar((Number) object);
+        else if(object instanceof Enum)
+            scalar = new Scalar((Enum) object);
+        else if(object instanceof Boolean)
+            scalar = new Scalar((Boolean) object);
+        else {
+            throw new NotSupportedException(object.getClass() + " is not supported.");
+        }
+
+        return scalar;
+    }
+
+    private Sequence doMappingForSequence(List<Object> objects) throws NotSupportedException {
+        Sequence sequence = new Sequence();
+
+        for(Object object: objects){
+            if(object instanceof Map){
+                sequence.add(doMappingForMap((Map<String, Object>) object));
+            }
+            else if(object instanceof Sequence){
+                sequence.add(doMappingForSequence((List) object));
+            }
+            else{
+                sequence.add(doMappingForScalar(object));
+            }
+        }
+
+        return sequence;
+    }
+
+    public List<String> getStage(Stage stage) throws InstantiationException, IllegalAccessException, ConfiguratorException,
+            InvocationTargetException, NotSupportedException, NoSuchMethodException {
         String stageName = stage.getName();
 
         ArrayList<String> snippetLines = new ArrayList<>();

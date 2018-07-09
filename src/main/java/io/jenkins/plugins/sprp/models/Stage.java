@@ -50,7 +50,7 @@ public class Stage {
                     step.setParameters((HashMap<String, Object>) entry.getValue());
                 }
                 else {
-                    step.setDefaultParameter(entry.getValue().toString());
+                    step.setDefaultParameter(entry.getValue());
                 }
             }
 
@@ -67,5 +67,9 @@ public class Stage {
 
     public void setAgent(Agent agent) {
         this.agent = agent;
+
+        if(this.agent.getTools() != null){
+            throw new IllegalStateException("\"tools\" is not allowed inside a stage agent.");
+        }
     }
 }

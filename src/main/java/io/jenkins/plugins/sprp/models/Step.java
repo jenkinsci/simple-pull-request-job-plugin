@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class Step {
     @Nonnull
     private String stepName;
-    private String defaultParameter;
+    private Object defaultParameter;
     private HashMap<String, Object> parameters;
 
     Step(){
@@ -29,11 +29,11 @@ public class Step {
         this.parameters = parameters;
     }
 
-    public String getDefaultParameter() {
+    public Object getDefaultParameter() {
         return defaultParameter;
     }
 
-    public void setDefaultParameter(String defaultParameter) {
+    public void setDefaultParameter(Object defaultParameter) {
         this.defaultParameter = defaultParameter;
     }
 }

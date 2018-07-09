@@ -6,6 +6,7 @@ import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -17,8 +18,8 @@ import java.util.ArrayList;
 
 public class YamlToPipeline {
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
-            throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException,
-            IllegalAccessException, NoSuchFieldException {
+            throws InvocationTargetException, InstantiationException, ConfiguratorException,
+            IllegalAccessException, NotSupportedException, NoSuchMethodException {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
@@ -52,14 +53,12 @@ public class YamlToPipeline {
 
         if(yamlPipeline.getStages() != null) {
             for (Stage stage : yamlPipeline.getStages()) {
-                scriptLines.addAll(psg.getStage(
-                        stage,
-                        yamlPipeline.getReports(),
-                        yamlPipeline.getArchiveArtifacts(),
-                        gitConfig,
-                        yamlPipeline.getFindBugs()));
+                scriptLines.addAll(psg.getStage(stage));
             }
         }
+
+        // Archive artifacts stage
+        scriptLines.addAll(psg.getArchiveArtifactsStage(yamlPipeline.getArchiveArtifacts()));
 
         scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
                 yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
