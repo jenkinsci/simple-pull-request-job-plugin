@@ -16,9 +16,9 @@ public class Agent {
     private String anyOrNone;
     private HashMap<String, String> tools;
 
-    Agent(){}
+    public Agent(){}
 
-    Agent(String anyOrNone) throws NotSupportedException {
+    public Agent(String anyOrNone) throws NotSupportedException {
         if(anyOrNone.equals("any") || anyOrNone.equals("none"))
             this.anyOrNone = anyOrNone;
         else

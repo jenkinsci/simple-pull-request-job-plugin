@@ -16,7 +16,7 @@ public class EndToEndTest {
 
     @Test
     public void verifyIsUnix() {
-        boolean isUnixFormPipelineSnippetGenerator = new PipelineSnippetGenerator().isUnix();
+        boolean isUnixFormPipelineSnippetGenerator = new PipelineSnippetGenerator(jenkinsRule.createLocalLauncher()).isUnix();
         boolean isUnixFormJenkinsRule = jenkinsRule.createLocalLauncher().isUnix();
         assertEquals(isUnixFormPipelineSnippetGenerator, isUnixFormJenkinsRule);
     }
