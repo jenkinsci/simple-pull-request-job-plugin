@@ -54,19 +54,19 @@ public class PipelineSnippetGenerator {
 
     }
 
-    private String getCommonOptionsOfAgent(Agent agent){
-        String snippet = "";
+    private List<String> getCommonOptionsOfAgent(Agent agent){
+        ArrayList<String> snippetLines = new ArrayList<>();
 
         if (agent.getLabel() != null)
-            snippet += "label '" + agent.getLabel() + "'\n";
+            snippetLines.add("label '" + agent.getLabel() + "'");
 
         if (agent.getCustomWorkspace() != null)
-            snippet += "customWorkspace '" + agent.getCustomWorkspace() + "'\n";
+            snippetLines.add("customWorkspace '" + agent.getCustomWorkspace() + "'");
 
         if (agent.getDockerfile() != null || agent.getDockerImage() != null)
-            snippet += "reuseNode " + agent.getReuseNode() + "\n";
+            snippetLines.add("reuseNode " + agent.getReuseNode() + "");
 
-        return snippet;
+        return snippetLines;
     }
 
     public List<String> getAgent(Agent agent){
@@ -88,7 +88,7 @@ public class PipelineSnippetGenerator {
                     agentLines.add("args '" + agent.getArgs() + "'");
 
                 agentLines.add("alwaysPull " + agent.getAlwaysPull() + "");
-                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
             }
@@ -103,14 +103,14 @@ public class PipelineSnippetGenerator {
                 if (agent.getArgs() != null)
                     agentLines.add("additionalBuildArgs '" + agent.getArgs() + "'");
 
-                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
             }
             else if(agent.getLabel() != null && agent.getCustomWorkspace() != null){
                 agentLines.add("agent {");
                 agentLines.add("node{");
-                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
             }
