@@ -177,61 +177,31 @@ public class PipelineSnippetGenerator {
 
         snippetLines.add("post {");
 
-        if(postSection.getAborted() != null){
-            snippetLines.add("aborted {");
-            snippetLines.addAll(getSteps(postSection.getAborted()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getAlways() != null){
-            snippetLines.add("always {");
-            snippetLines.addAll(getSteps(postSection.getAlways()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getChanged() != null){
-            snippetLines.add("changed {");
-            snippetLines.addAll(getSteps(postSection.getChanged()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getCleanup() != null){
-            snippetLines.add("cleanup {");
-            snippetLines.addAll(getSteps(postSection.getCleanup()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getFailure() != null){
-            snippetLines.add("failure {");
-            snippetLines.addAll(getSteps(postSection.getFailure()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getFixed() != null){
-            snippetLines.add("fixed {");
-            snippetLines.addAll(getSteps(postSection.getFixed()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getRegression() != null){
-            snippetLines.add("regression {");
-            snippetLines.addAll(getSteps(postSection.getRegression()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getSuccess() != null){
-            snippetLines.add("success {");
-            snippetLines.addAll(getSteps(postSection.getSuccess()));
-            snippetLines.add("}");
-        }
-
-        if(postSection.getUnstable() != null){
-            snippetLines.add("unstable {");
-            snippetLines.addAll(getSteps(postSection.getUnstable()));
-            snippetLines.add("}");
-        }
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("always",postSection.getAlways()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("changed",postSection.getChanged()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("fixed",postSection.getFixed()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("regression",postSection.getRegression()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("aborted",postSection.getAborted()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("failure",postSection.getFailure()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("success",postSection.getSuccess()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("unstable",postSection.getUnstable()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("cleanup",postSection.getCleanup()));
 
         snippetLines.add("}");
+
+        return snippetLines;
+    }
+
+    private List<String> getPostConditionSnippetIfNonNull(String postCondition, ArrayList<LinkedHashMap<String, Step>> steps)
+            throws IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException,
+            NoSuchMethodException, InvocationTargetException
+    {
+        ArrayList<String> snippetLines = new ArrayList<>();
+        if(steps != null) {
+            snippetLines.add(postCondition + " {");
+            snippetLines.addAll(getSteps(steps));
+            snippetLines.add("}");
+        }
 
         return snippetLines;
     }
@@ -424,7 +394,9 @@ public class PipelineSnippetGenerator {
 
         snippetLines.add("stage('Publish reports & artifacts') {");
         snippetLines.add("steps {");
-        snippetLines.addAll(getPublishReportSnippet(reports));
+        if (reports != null) {
+            snippetLines.addAll(getPublishReportSnippet(reports));
+        }
 
         if(config != null) {
             snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");

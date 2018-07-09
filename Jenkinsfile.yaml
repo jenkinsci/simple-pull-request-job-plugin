@@ -1,5 +1,5 @@
 # same as defined in current version
-agent: any
+agent:
 #  label: my_label
 #  customWorkspace: path_to_workspace
 #  dockerImage: maven:3-alpine
