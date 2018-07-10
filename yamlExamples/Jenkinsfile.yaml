@@ -1,14 +1,14 @@
-# same as defined in current version
 agent:
+#  Docket image agent example
 #  label: my_label
 #  customWorkspace: path_to_workspace
 #  dockerImage: maven:3-alpine
 #  args: -v /tmp:/tmp
-  # so that tools will be a prt of agent only
+
   # tools needs to be defined in the tool configuration
-#  tools:
-#    maven : maven_3.0.1
-#    jdk : jdk8
+  tools:
+    maven : maven_3.0.1
+    jdk : jdk8
 
 configuration:
   # Push PR changes to the target branch if the build will be success.
@@ -48,6 +48,8 @@ stages:
       - sh: "scripts/hello"
       - sleep:
           time: 2
+#          Configurator.lookup() in JCasc plugin returns null for java.util.concurrent.TimeUnit which is an Enum class
+#          jira link: https://issues.jenkins-ci.org/browse/JENKINS-52443
 #          unit: SECONDS
       - sleep: 2
       - junit:
@@ -57,6 +59,9 @@ stages:
             - AutomateTestDataPublisher
             - JunitResultPublisher:
                 urlOverride: "urlOverride"
+#           JCasc plugin having problem in configuring below class
+#           jira link: https://issues.jenkins-ci.org/browse/JENKINS-52444
+
 #            - JiraTestDataPublisher:
 #                configs:
 #                  - SelectableFields:
