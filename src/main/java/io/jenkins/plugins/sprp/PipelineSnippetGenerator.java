@@ -4,28 +4,32 @@ import hudson.Launcher;
 import hudson.model.Descriptor;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
+import io.jenkins.plugins.sprp.models.Environment;
+import io.jenkins.plugins.sprp.models.Credential;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
+import io.jenkins.plugins.sprp.models.Post;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.jenkinsci.plugins.casc.model.Mapping;
+import org.jenkinsci.plugins.casc.model.Scalar;
+import org.jenkinsci.plugins.casc.model.Sequence;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
-import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class PipelineSnippetGenerator {
-    static private Logger logger = java.util.logging.Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
+    static private Logger logger = Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
     private Launcher launcher;
 
     PipelineSnippetGenerator(Launcher launcher){
@@ -50,19 +54,19 @@ public class PipelineSnippetGenerator {
 
     }
 
-    private String getCommonOptionsOfAgent(Agent agent){
-        String snippet = "";
+    private List<String> getCommonOptionsOfAgent(Agent agent){
+        ArrayList<String> snippetLines = new ArrayList<>();
 
         if (agent.getLabel() != null)
-            snippet += "label '" + agent.getLabel() + "'\n";
+            snippetLines.add("label '" + agent.getLabel() + "'");
 
         if (agent.getCustomWorkspace() != null)
-            snippet += "customWorkspace '" + agent.getCustomWorkspace() + "'\n";
+            snippetLines.add("customWorkspace '" + agent.getCustomWorkspace() + "'");
 
         if (agent.getDockerfile() != null || agent.getDockerImage() != null)
-            snippet += "reuseNode " + agent.getReuseNode() + "\n";
+            snippetLines.add("reuseNode " + agent.getReuseNode() + "");
 
-        return snippet;
+        return snippetLines;
     }
 
     public List<String> getAgent(Agent agent){
@@ -74,9 +78,9 @@ public class PipelineSnippetGenerator {
         else if(agent.getAnyOrNone() != null)
             agentLines.add("agent " + agent.getAnyOrNone());
         else {
-            agentLines.add("agent {");
 
             if(agent.getDockerImage() != null){
+                agentLines.add("agent {");
                 agentLines.add("docker {");
                 agentLines.add("image '" + agent.getDockerImage() + "'");
 
@@ -84,10 +88,12 @@ public class PipelineSnippetGenerator {
                     agentLines.add("args '" + agent.getArgs() + "'");
 
                 agentLines.add("alwaysPull " + agent.getAlwaysPull() + "");
-                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
                 agentLines.add("}");
             }
             else if(agent.getDockerfile() != null){
+                agentLines.add("agent {");
                 agentLines.add("dockerfile {");
                 agentLines.add("filename '" + agent.getDockerfile() + "'");
 
@@ -97,26 +103,123 @@ public class PipelineSnippetGenerator {
                 if (agent.getArgs() != null)
                     agentLines.add("additionalBuildArgs '" + agent.getArgs() + "'");
 
-                agentLines.add(getCommonOptionsOfAgent(agent));
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
+                agentLines.add("}");
+            }
+            else if(agent.getLabel() != null && agent.getCustomWorkspace() != null){
+                agentLines.add("agent {");
+                agentLines.add("node{");
+                agentLines.addAll(getCommonOptionsOfAgent(agent));
+                agentLines.add("}");
                 agentLines.add("}");
             }
             else {
-                agentLines.add("node{");
-                agentLines.add(getCommonOptionsOfAgent(agent));
-                agentLines.add("}");
+                agentLines.add("agent any");
             }
 
-            agentLines.add("}");
+        }
+
+        if(agent != null) {
+            agentLines.addAll(getTools(agent.getTools()));
         }
 
         return agentLines;
     }
 
-    public List<String> getArchiveArtifactsSnippet(ArrayList<String> paths){
+    public List<String> getTools(HashMap<String, String> tools){
         ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(tools == null) {
+            return snippetLines;
+        }
+
+        snippetLines.add("tools {");
+
+        for(Map.Entry<String, String> entry: tools.entrySet()){
+            snippetLines.add(entry.getKey() + " '" + entry.getValue() + "'");
+        }
+
+        snippetLines.add("}");
+
+        return snippetLines;
+    }
+
+    public List<String> getEnvironment(Environment environment){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(environment == null || (environment.getVariables() == null && environment.getCredentials() == null)) {
+            return snippetLines;
+        }
+
+        snippetLines.add("environment {");
+
+        for(Map.Entry<String, String> entry: environment.getVariables().entrySet()){
+            snippetLines.add(entry.getKey() + " = '" + entry.getValue() + "'");
+        }
+
+        for(Credential credential: environment.getCredentials()){
+            snippetLines.add(credential.getVariable() + " = credentials('" + credential.getCredentialId() + "')");
+        }
+
+        snippetLines.add("}");
+
+        return snippetLines;
+    }
+
+    public List<String> getPostSection(Post postSection) throws ConfiguratorException,
+            InstantiationException, IllegalAccessException, InvocationTargetException, NotSupportedException, NoSuchMethodException {
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(postSection == null) {
+            return snippetLines;
+        }
+
+        snippetLines.add("post {");
+
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("always",postSection.getAlways()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("changed",postSection.getChanged()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("fixed",postSection.getFixed()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("regression",postSection.getRegression()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("aborted",postSection.getAborted()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("failure",postSection.getFailure()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("success",postSection.getSuccess()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("unstable",postSection.getUnstable()));
+        snippetLines.addAll(getPostConditionSnippetIfNonNull("cleanup",postSection.getCleanup()));
+
+        snippetLines.add("}");
+
+        return snippetLines;
+    }
+
+    private List<String> getPostConditionSnippetIfNonNull(String postCondition, ArrayList<LinkedHashMap<String, Step>> steps)
+            throws IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException,
+            NoSuchMethodException, InvocationTargetException
+    {
+        ArrayList<String> snippetLines = new ArrayList<>();
+        if(steps != null) {
+            snippetLines.add(postCondition + " {");
+            snippetLines.addAll(getSteps(steps));
+            snippetLines.add("}");
+        }
+
+        return snippetLines;
+    }
+
+    public List<String> getArchiveArtifactsStage(ArrayList<String> paths){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(paths == null)
+            return snippetLines;
+
+        snippetLines.add("stage('Archive artifacts') {");
+        snippetLines.add("steps {");
 
         for(String p: paths)
             snippetLines.add("archiveArtifacts artifacts: '" + p + "'");
+
+        snippetLines.add("}");
+        snippetLines.add("}");
 
         return snippetLines;
     }
@@ -130,11 +233,13 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    private List<String> getSteps(ArrayList<Step> steps) throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException, IllegalAccessException, NoSuchFieldException {
+    List<String> getSteps(ArrayList<LinkedHashMap<String, Step>> steps) throws InvocationTargetException,
+            InstantiationException, ConfiguratorException, IllegalAccessException, NotSupportedException, NoSuchMethodException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
-        for(Step step: steps)
-            snippetLines.add(stepConfigurator(step));
+        for(LinkedHashMap<String, Step> step: steps)
+            for(Map.Entry<String, Step> entry: step.entrySet())
+                snippetLines.add(stepConfigurator(entry.getValue()));
 
         return snippetLines;
     }
@@ -153,13 +258,13 @@ public class PipelineSnippetGenerator {
 
     private String stepConfigurator(Step step)
             throws IllegalAccessException, InvocationTargetException,
-            InstantiationException, ConfiguratorException, NoSuchFieldException {
+            InstantiationException, ConfiguratorException, NotSupportedException, NoSuchMethodException {
         if(step == null)
             return "\n";
 
         String snippet;
         Object stepObject = null;
-        Descriptor stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
+        Descriptor<org.jenkinsci.plugins.workflow.steps.Step> stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
 
         if(stepDescriptor == null)
             throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
@@ -168,70 +273,29 @@ public class PipelineSnippetGenerator {
 
         if(step.getStepName().equals("sh")){
             if(step.getDefaultParameter() != null) {
-                step.setDefaultParameter(completeShellScriptPath(step.getDefaultParameter()));
+                step.setDefaultParameter(completeShellScriptPath((String) step.getDefaultParameter()));
             }
             else{
                 step.getParameters().put("script", completeShellScriptPath(step.getParameters().get("script").toString()));
             }
         }
 
-        // Right now all the DefaultParameter of a step are considered to be string.
         if(step.getDefaultParameter() != null){
-            Constructor[] constructors = clazz.getConstructors();
-            boolean foundSuitableConstructor = false;
+            Constructor constructor = Configurator.getDataBoundConstructor(clazz);
 
-            for(int i = 0; i < constructors.length && !foundSuitableConstructor; i++){
-                Annotation[] annotations = constructors[i].getAnnotations();
-                for(int j = 0; j < annotations.length && !foundSuitableConstructor; j++){
-                    if(annotations[j].annotationType() == DataBoundConstructor.class && constructors[i].getParameterCount() == 1){
-                        foundSuitableConstructor = true;
-                        Class parameterClass = constructors[i].getParameters()[0].getType();
-
-                        if(parameterClass == String.class)
-                            stepObject = constructors[i].newInstance(step.getDefaultParameter());
-                        else if(parameterClass == Boolean.class)
-                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
-                        else if(parameterClass == Float.class)
-                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
-                        if(parameterClass == Double.class)
-                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
-                        else if(parameterClass == Integer.class)
-                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
-                        else if(parameterClass == boolean.class)
-                            stepObject = constructors[i].newInstance(Boolean.parseBoolean(step.getDefaultParameter()));
-                        else if(parameterClass == float.class)
-                            stepObject = constructors[i].newInstance(Float.parseFloat(step.getDefaultParameter()));
-                        else if(parameterClass == double.class)
-                            stepObject = constructors[i].newInstance(Double.parseDouble(step.getDefaultParameter()));
-                        else if(parameterClass == int.class)
-                            stepObject = constructors[i].newInstance(Integer.parseInt(step.getDefaultParameter()));
-                        else
-                            logger.log(Level.WARNING, parameterClass.getName() + "is not supported at this time.");
-                    }
-                }
+            if(constructor != null && constructor.getParameterCount() == 1){
+                stepObject = constructor.newInstance(step.getDefaultParameter());
+            }
+            else{
+                throw new NoSuchMethodException("No suitable constructor found for default parameter of step "
+                        + step.getStepName());
             }
         }
         else{
-            Mapping mapping = new Mapping();
-
-            for(Map.Entry<String, Object> entry: step.getParameters().entrySet()){
-                Class stepFieldClass = clazz.getDeclaredField(entry.getKey()).getType();
-
-                if(stepFieldClass == String.class)
-                    mapping.put(entry.getKey(), (String) entry.getValue());
-                else if(stepFieldClass == Boolean.class)
-                    mapping.put(entry.getKey(), (Boolean) entry.getValue());
-                else if(stepFieldClass == Float.class)
-                    mapping.put(entry.getKey(), (Float) entry.getValue());
-                if(stepFieldClass == Double.class)
-                    mapping.put(entry.getKey(), (Double) entry.getValue());
-                else if(stepFieldClass == Integer.class)
-                    mapping.put(entry.getKey(), (Integer) entry.getValue());
-                else
-                    logger.log(Level.WARNING, stepFieldClass.getName() + "is not supported at this time.");
-            }
+            Mapping mapping = doMappingForMap(step.getParameters());
 
             Configurator configurator = Configurator.lookup(clazz);
+
             if (configurator != null) {
                 stepObject = configurator.configure(mapping);
             }
@@ -241,109 +305,127 @@ public class PipelineSnippetGenerator {
             }
         }
 
-        if (stepObject == null)
-            throw new IllegalStateException("Cannot find a step named " + step.getStepName() + " with suitable parameters.");
-
         snippet = Snippetizer.object2Groovy(stepObject);
         return snippet;
     }
 
-    public List<String> getStage(
-            Stage stage,
-            ArrayList<String> buildResultPaths,
-            ArrayList<String> testResultPaths,
-            ArrayList<String> archiveArtifacts,
-            GitConfig gitConfig,
-            String findbugs
-    ) throws NoSuchMethodException, InstantiationException, IllegalAccessException, ConfiguratorException,
-            InvocationTargetException, NoSuchFieldException
-    {
+    private Mapping doMappingForMap(Map<String, Object> map) throws NotSupportedException {
+        Mapping mapping = new Mapping();
+
+        for(Map.Entry<String, Object> entry: map.entrySet()){
+            if(entry.getValue() instanceof Map){
+                mapping.put(entry.getKey(), doMappingForMap((Map<String, Object>) entry.getValue()));
+            }
+            else if(entry.getValue() instanceof List){
+                mapping.put(entry.getKey(), doMappingForSequence((List) entry.getValue()));
+            }
+            else {
+                mapping.put(entry.getKey(), doMappingForScalar(entry.getValue()));
+            }
+        }
+
+        return mapping;
+    }
+
+    private Scalar doMappingForScalar(Object object) throws NotSupportedException {
+        Scalar scalar;
+
+        if(object instanceof String)
+            scalar = new Scalar((String) object);
+        else if(object instanceof Number)
+            scalar = new Scalar((Number) object);
+        else if(object instanceof Enum)
+            scalar = new Scalar((Enum) object);
+        else if(object instanceof Boolean)
+            scalar = new Scalar((Boolean) object);
+        else {
+            throw new NotSupportedException(object.getClass() + " is not supported.");
+        }
+        
+        return scalar;
+    }
+
+    private Sequence doMappingForSequence(List<Object> objects) throws NotSupportedException {
+        Sequence sequence = new Sequence();
+
+        for(Object object: objects){
+            if(object instanceof Map){
+                sequence.add(doMappingForMap((Map<String, Object>) object));
+            }
+            else if(object instanceof Sequence){
+                sequence.add(doMappingForSequence((List) object));
+            }
+            else{
+                sequence.add(doMappingForScalar(object));
+            }
+        }
+
+        return sequence;
+    }
+
+    public List<String> getStage(Stage stage) throws InstantiationException, IllegalAccessException, ConfiguratorException,
+            InvocationTargetException, NotSupportedException, NoSuchMethodException {
+        String stageName = stage.getName();
+
         ArrayList<String> snippetLines = new ArrayList<>();
-        snippetLines.add("stage('" + stage.getName() + "') {");
+        snippetLines.add("stage('" + stageName + "') {");
+
+        if (!stage.getAgent().getAnyOrNone().equals("any")) {
+            snippetLines.addAll(getAgent(stage.getAgent()));
+        }
 
         snippetLines.add("steps {");
         snippetLines.addAll(getSteps(stage.getSteps()));
         snippetLines.add("}");
 
-        // This condition is to generate Success, Failure and Always steps after steps finished executing.
-        if(stage.getFailure() != null
-                || stage.getSuccess() != null
-                || stage.getAlways() != null
-                || (stage.getName().equals("Build") &&
-                        (archiveArtifacts != null || buildResultPaths != null || findbugs != null))
-                || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)) {
-            snippetLines.add("post {");
+        snippetLines.addAll(getPostSection(stage.getPost()));
 
-            if (stage.getSuccess() != null
-                    || (stage.getName().equals("Build"))
-                    || stage.getName().equals("Tests") && (testResultPaths != null || gitConfig.getGitUrl() != null)
-                    )
-            {
-                snippetLines.add("success {");
-                if (stage.getName().equals("Build")) {
-                    snippetLines.add("archiveArtifacts artifacts: '**/target/*.jar'");
-                    if(archiveArtifacts != null)
-                        snippetLines.addAll(getArchiveArtifactsSnippet(archiveArtifacts));
-
-                    if(buildResultPaths != null)
-                        snippetLines.addAll(getPublishReportSnippet(buildResultPaths));
-                }
-                if (stage.getName().equals("Tests")) {
-                    if (testResultPaths != null) {
-                        snippetLines.addAll(getPublishReportSnippet(testResultPaths));
-                    }
-
-                    if (gitConfig.getGitUrl() != null) {
-                        snippetLines.add("gitPush " +
-                                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
-                                "url: \"" + gitConfig.getGitUrl() + "\"," +
-                                "branch: \"" + gitConfig.getGitBranch() + "\"");
-                    }
-                }
-                if(stage.getSuccess() != null)
-                    snippetLines.add(shellScript(stage.getSuccess()));
-                snippetLines.add("}");
-            }
-            if (stage.getAlways() != null || (findbugs != null && stage.getName().equals("Tests"))) {
-                snippetLines.add("always {");
-                if(findbugs != null && stage.getName().equals("Tests"))
-                    snippetLines.add("findbugs pattern: '" + findbugs + "'");
-
-                if(stage.getAlways() != null)
-                    snippetLines.add(shellScript(stage.getAlways()));
-                snippetLines.add("}");
-            }
-            if (stage.getFailure() != null) {
-                snippetLines.add("failure {");
-                snippetLines.add(shellScript(stage.getFailure()));
-                snippetLines.add("}");
-            }
-
-            snippetLines.add("}");
-        }
         snippetLines.add("}");
 
         return snippetLines;
     }
 
-    public List<String> getPublishArtifactStage(ArtifactPublishingConfig config, ArrayList<HashMap<String, String>> publishArtifacts){
+    public List<String> getPublishReportsAndArtifactStage(ArrayList<String> reports, ArtifactPublishingConfig config,
+                                          ArrayList<HashMap<String, String>> publishArtifacts){
         ArrayList<String> snippetLines = new ArrayList<>();
 
-        if(config == null)
+        if(reports == null && config == null)
             return snippetLines;
 
-        snippetLines.add("stage('Publish Artifacts') {");
+        snippetLines.add("stage('Publish reports & artifacts') {");
         snippetLines.add("steps {");
-        snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
+        if (reports != null) {
+            snippetLines.addAll(getPublishReportSnippet(reports));
+        }
 
-        for(HashMap<String, String> artifact: publishArtifacts){
-            snippetLines.add("sh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'");
+        if(config != null) {
+            snippetLines.add("" + "withCredentials([file(credentialsId: '" + config.getCredentialId() + "', variable: 'FILE')]) {");
+
+            for (HashMap<String, String> artifact : publishArtifacts) {
+                snippetLines.add("sh 'scp -i $FILE " + artifact.get("from") + " " + config.getUser() + "@" + config.getHost() + ":" + artifact.get("to") + "'");
+            }
+
+            snippetLines.add("}");
         }
 
         snippetLines.add("}");
         snippetLines.add("}");
-        snippetLines.add("}");
 
+        return snippetLines;
+    }
+
+    public List<String> gitPushStage(GitConfig gitConfig){
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        snippetLines.add("stage('Git Push') {");
+        snippetLines.add("steps {");
+        snippetLines.add("gitPush " +
+                "credentialId: \"" + gitConfig.getCredentialsId() + "\"," +
+                "url: \"" + gitConfig.getGitUrl() + "\"," +
+                "branch: \"" + gitConfig.getGitBranch() + "\"");
+
+        snippetLines.add("}");
+        snippetLines.add("}");
         return snippetLines;
     }
 

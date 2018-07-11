@@ -40,7 +40,7 @@ environment:
       variable : LOGIN
 
 stages:
-  - name: satge1
+  - name: stage1
     agent: any
     steps:
       - sh:
@@ -62,15 +62,15 @@ stages:
 #           JCasc plugin having problem in configuring below class
 #           jira link: https://issues.jenkins-ci.org/browse/JENKINS-52444
 
-            - JiraTestDataPublisher:
-                configs:
-                  - SelectableFields:
-                      fieldKey: "SelectableFields key"
-                      value: "SelectableFields value"
-
-                projectKey: "project key"
-                issueType: "issue type"
-                autoRaiseIssue: true
+#            - JiraTestDataPublisher:
+#                configs:
+#                  - SelectableFields:
+#                      fieldKey: "SelectableFields key"
+#                      value: "SelectableFields value"
+#
+#                projectKey: "project key"
+#                issueType: "issue type"
+#                autoRaiseIssue: true
 
 
     post:

@@ -6,6 +6,7 @@ import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
+import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -17,8 +18,8 @@ import java.util.ArrayList;
 
 public class YamlToPipeline {
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
-            throws InvocationTargetException, NoSuchMethodException, InstantiationException, ConfiguratorException,
-            IllegalAccessException, NoSuchFieldException {
+            throws InvocationTargetException, InstantiationException, ConfiguratorException,
+            IllegalAccessException, NotSupportedException, NoSuchMethodException {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
@@ -31,27 +32,47 @@ public class YamlToPipeline {
 
         scriptLines.add("pipeline {");
 
-        // Adding outer agent
+        // Adding outer agent and tools section
         scriptLines.addAll(psg.getAgent(yamlPipeline.getAgent()));
+
+        // Adding environment
+        scriptLines.addAll(psg.getEnvironment(yamlPipeline.getEnvironment()));
 
         // Stages begin
         scriptLines.add("stages {");
 
-        for(Stage stage: yamlPipeline.getStages()){
-            scriptLines.addAll(psg.getStage(
-                    stage,
-                    yamlPipeline.getBuildResultPaths(),
-                    yamlPipeline.getTestResultPaths(),
-                    yamlPipeline.getArchiveArtifacts(),
-                    gitConfig,
-                    yamlPipeline.getFindBugs()));
+        if(yamlPipeline.getSteps() != null){
+            scriptLines.add("stage('Build') {");
+            scriptLines.add("steps {");
+
+            scriptLines.addAll(psg.getSteps(yamlPipeline.getSteps()));
+
+            scriptLines.add("}");
+            scriptLines.add("}");
         }
 
-        scriptLines.addAll(psg.getPublishArtifactStage(yamlPipeline.getArtifactPublishingConfig(),
-                yamlPipeline.getPublishArtifacts()));
+        if(yamlPipeline.getStages() != null) {
+            for (Stage stage : yamlPipeline.getStages()) {
+                scriptLines.addAll(psg.getStage(stage));
+            }
+        }
 
+        // Archive artifacts stage
+        scriptLines.addAll(psg.getArchiveArtifactsStage(yamlPipeline.getArchiveArtifacts()));
+
+        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
+                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
+
+        // This stage will always be generated at last, because if anyone of the above stage fails then we
+        // will not push the code to target branch
+        if(yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()){
+            scriptLines.addAll(psg.gitPushStage(gitConfig));
+        }
 
         scriptLines.add("}");
+
+        scriptLines.addAll(psg.getPostSection(yamlPipeline.getPost()));
+
         scriptLines.add("}");
 
         return psg.autoAddTabs(scriptLines);
@@ -66,6 +87,10 @@ public class YamlToPipeline {
             // TODO: Just for testing purpose, needs to be removed before release
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             System.out.println(ow.writeValueAsString(yamlPipeline));
+
+            if(yamlPipeline.getStages() != null && yamlPipeline.getSteps() != null){
+                throw new IllegalStateException("Only one of 'steps' or 'stages' must be present in the YAML file.");
+            }
 
             return yamlPipeline;
         }

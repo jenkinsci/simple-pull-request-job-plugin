@@ -1,13 +1,15 @@
 package io.jenkins.plugins.sprp.models;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Stage {
     private String name;
-    private ArrayList<Step> steps;
-    private ArrayList<String> failure;
-    private ArrayList<String> success;
-    private ArrayList<String> always;
+    private Agent agent;
+    private ArrayList<LinkedHashMap<String, Step>> steps;
+    private Post post;
 
     Stage(){}
 
@@ -19,35 +21,55 @@ public class Stage {
         this.name = name;
     }
 
-    public ArrayList<String> getFailure() {
-        return failure;
+    public Post getPost() {
+        return post;
     }
 
-    public void setFailure(ArrayList<String> failure) {
-        this.failure = failure;
+    public void setPost(Post post) {
+        this.post = post;
     }
 
-    public ArrayList<String> getAlways() {
-        return always;
-    }
-
-    public void setAlways(ArrayList<String> always) {
-        this.always = always;
-    }
-
-    public ArrayList<Step> getSteps() {
+    public ArrayList<LinkedHashMap<String, Step>> getSteps() {
         return steps;
     }
 
-    public void setSteps(ArrayList<Step> steps) {
-        this.steps = steps;
+    public void setSteps(ArrayList<LinkedHashMap<String, Object>> stepsList) {
+        this.steps = generateSteps(stepsList);
     }
 
-    public ArrayList<String> getSuccess() {
-        return success;
+    static ArrayList<LinkedHashMap<String, Step>> generateSteps(ArrayList<LinkedHashMap<String, Object>> stepsList) {
+        ArrayList<LinkedHashMap<String, Step>> generatedSteps = new ArrayList<>();
+        for(LinkedHashMap<String, Object> yamlStepObj: stepsList){
+            LinkedHashMap<String, Step> stepObj = new LinkedHashMap<>();
+            Step step = new Step();
+
+            // Below for loop will run only once as it will have only one step
+            for(Map.Entry<String, Object> entry: yamlStepObj.entrySet()){
+                step.setStepName(entry.getKey());
+                if(entry.getValue().getClass() == LinkedHashMap.class){
+                    step.setParameters((HashMap<String, Object>) entry.getValue());
+                }
+                else {
+                    step.setDefaultParameter(entry.getValue());
+                }
+            }
+
+            stepObj.put(step.getStepName(), step);
+            generatedSteps.add(stepObj);
+        }
+
+        return generatedSteps;
     }
 
-    public void setSuccess(ArrayList<String> success) {
-        this.success = success;
+    public Agent getAgent() {
+        return agent;
+    }
+
+    public void setAgent(Agent agent) {
+        this.agent = agent;
+
+        if(this.agent.getTools() != null){
+            throw new IllegalStateException("\"tools\" is not allowed inside a stage agent.");
+        }
     }
 }
