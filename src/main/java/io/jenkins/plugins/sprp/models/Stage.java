@@ -11,7 +11,31 @@ public class Stage {
     private ArrayList<LinkedHashMap<String, Step>> steps;
     private Post post;
 
-    Stage(){}
+    Stage() {
+    }
+
+    static ArrayList<LinkedHashMap<String, Step>> generateSteps(ArrayList<LinkedHashMap<String, Object>> stepsList) {
+        ArrayList<LinkedHashMap<String, Step>> generatedSteps = new ArrayList<>();
+        for (LinkedHashMap<String, Object> yamlStepObj : stepsList) {
+            LinkedHashMap<String, Step> stepObj = new LinkedHashMap<>();
+            Step step = new Step();
+
+            // Below for loop will run only once as it will have only one step
+            for (Map.Entry<String, Object> entry : yamlStepObj.entrySet()) {
+                step.setStepName(entry.getKey());
+                if (entry.getValue().getClass() == LinkedHashMap.class) {
+                    step.setParameters((HashMap<String, Object>) entry.getValue());
+                } else {
+                    step.setDefaultParameter(entry.getValue());
+                }
+            }
+
+            stepObj.put(step.getStepName(), step);
+            generatedSteps.add(stepObj);
+        }
+
+        return generatedSteps;
+    }
 
     public String getName() {
         return name;
@@ -37,30 +61,6 @@ public class Stage {
         this.steps = generateSteps(stepsList);
     }
 
-    static ArrayList<LinkedHashMap<String, Step>> generateSteps(ArrayList<LinkedHashMap<String, Object>> stepsList) {
-        ArrayList<LinkedHashMap<String, Step>> generatedSteps = new ArrayList<>();
-        for(LinkedHashMap<String, Object> yamlStepObj: stepsList){
-            LinkedHashMap<String, Step> stepObj = new LinkedHashMap<>();
-            Step step = new Step();
-
-            // Below for loop will run only once as it will have only one step
-            for(Map.Entry<String, Object> entry: yamlStepObj.entrySet()){
-                step.setStepName(entry.getKey());
-                if(entry.getValue().getClass() == LinkedHashMap.class){
-                    step.setParameters((HashMap<String, Object>) entry.getValue());
-                }
-                else {
-                    step.setDefaultParameter(entry.getValue());
-                }
-            }
-
-            stepObj.put(step.getStepName(), step);
-            generatedSteps.add(stepObj);
-        }
-
-        return generatedSteps;
-    }
-
     public Agent getAgent() {
         return agent;
     }
@@ -68,7 +68,7 @@ public class Stage {
     public void setAgent(Agent agent) {
         this.agent = agent;
 
-        if(this.agent.getTools() != null){
+        if (this.agent.getTools() != null) {
             throw new IllegalStateException("\"tools\" is not allowed inside a stage agent.");
         }
     }

@@ -12,7 +12,10 @@ import org.jenkinsci.plugins.gitclient.*;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class GitOperations {
     private static final String DUMMY_BRANCH_NAME = "DUMMY_8DD2963";   // Just to avoid duplicate branch name
@@ -40,7 +43,6 @@ public class GitOperations {
                 .using("git")
                 .getClient();
     }
-
 
 
     public void setEnvVars(EnvVars envVars) throws IOException, InterruptedException {
@@ -156,7 +158,7 @@ public class GitOperations {
         }
 
         listener.getLogger().println("Fetched successfully.");
-        printRevisions();
+
         if (!merge(Objects.requireNonNull(getObjectIdOfLocalBranch(DUMMY_BRANCH_NAME)).name()))
             return false;
 
@@ -169,8 +171,6 @@ public class GitOperations {
         mergeCommand.setRevisionToMerge(ObjectId.fromString(rev));
         mergeCommand.setMessage("Merging to build the pull request.");
         mergeCommand.setCommit(true);
-
-        printRevisions();
 
         try {
             mergeCommand.execute();
@@ -205,7 +205,7 @@ public class GitOperations {
 
         // https://stackoverflow.com/a/4183856/6693569
         // At this point the pointer may be at detached HEAD
-        if(fromHead)
+        if (fromHead)
             pushCommand.ref("HEAD:" + currentBranch);
         else
             pushCommand.ref(currentBranch);
@@ -224,7 +224,7 @@ public class GitOperations {
         return true;
     }
 
-    public void setUsernameAndPasswordCredential(StandardUsernameCredentials cred){
+    public void setUsernameAndPasswordCredential(StandardUsernameCredentials cred) {
         git.setCredentials(cred);
     }
 
@@ -239,16 +239,15 @@ public class GitOperations {
         try {
             Set<Branch> allBranches = (Set<Branch>) git.getBranches();
 
-            ArrayList<Branch> branches = new ArrayList<Branch>();
+            ArrayList<Branch> branches = new ArrayList<>();
 
             for (Branch b : allBranches) {
                 if (b.toString().contains(branch)) {
-//                    System.out.println("found: " + b.toString());
                     branches.add(b);
                 }
             }
 
-            if(branches.size() > 1) {
+            if (branches.size() > 1) {
                 allBranches.clear();
                 allBranches.addAll(branches);
                 branches.clear();
@@ -280,43 +279,6 @@ public class GitOperations {
             e.printStackTrace();
             listener.getLogger().println("Error while getting ObjectId of branch : " + branch);
             return null;
-        }
-    }
-
-
-    //TODO: This function needs to be removed before publishing.
-    private void printRevisions() {
-        try {
-            Set<Branch> branchs = (Set<Branch>) git.getBranches();
-            listener.getLogger().println("List of branches: ");
-            for (Branch b : branchs) {
-                listener.getLogger().print("  - " + b.toString() + " : ");
-                listener.getLogger().println(extractObjectIdFromBranch(b.toString()));
-            }
-
-            listener.getLogger().println("");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Set<String> rfnames = git.getRefNames("");
-            listener.getLogger().println("List of references: ");
-            for (String b : rfnames) {
-                listener.getLogger().println("  - " + b);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            HashMap<String, ObjectId> headrevs = (HashMap<String, ObjectId>) git.getHeadRev(this.url);
-            listener.getLogger().println("Head Revisions");
-            for (Map.Entry<String, ObjectId> e : headrevs.entrySet()) {
-                listener.getLogger().println("  - " + e.getKey() + " : " + e.getValue().name());
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }

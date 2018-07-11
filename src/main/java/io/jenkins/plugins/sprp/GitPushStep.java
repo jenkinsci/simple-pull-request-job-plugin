@@ -48,6 +48,7 @@ public class GitPushStep extends Step {
     }
 
     public static class Execution extends SynchronousStepExecution<Void> {
+        private static final long serialVersionUID = 1L;
         @SuppressFBWarnings(
                 value = {"SE_TRANSIENT_FIELD_NOT_RESTORED"},
                 justification = "Only used when starting."
@@ -55,7 +56,6 @@ public class GitPushStep extends Step {
         private final transient String credentialId;
         private final String url;
         private final String branch;
-        private static final long serialVersionUID = 1L;
 
         Execution(String credentialId, String url, String branch, StepContext context) {
             super(context);
@@ -74,10 +74,10 @@ public class GitPushStep extends Step {
                     CredentialsProvider.lookupCredentials(
                             StandardCredentials.class,
                             job,
-                            Tasks.getAuthenticationOf((Queue.Task)job)),
+                            Tasks.getAuthenticationOf((Queue.Task) job)),
                     CredentialsMatchers.withId(credentialId));
 
-            gitOperations.setUsernameAndPasswordCredential((StandardUsernameCredentials)c);
+            gitOperations.setUsernameAndPasswordCredential((StandardUsernameCredentials) c);
             gitOperations.setCurrentBranch(branch);
             gitOperations.push(true);
             return null;

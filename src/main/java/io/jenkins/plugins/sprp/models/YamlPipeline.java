@@ -18,7 +18,8 @@ public class YamlPipeline {
     private Post post;
     private ArrayList<LinkedHashMap<String, Step>> steps;
 
-    YamlPipeline(){}
+    YamlPipeline() {
+    }
 
     public Agent getAgent() {
         return agent;
