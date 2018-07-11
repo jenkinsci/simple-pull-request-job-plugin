@@ -40,7 +40,7 @@ environment:
       variable : LOGIN
 
 stages:
-  - name: satge1
+  - name: stage1
     agent: any
     steps:
       - sh:
