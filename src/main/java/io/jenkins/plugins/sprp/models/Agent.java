@@ -110,7 +110,8 @@ public class Agent {
 
     public void setNone(boolean none) {
         this.none = none;
-      
+    }
+    
     public void setTools(HashMap<String, String> tools) {
         this.tools = tools;
     }
