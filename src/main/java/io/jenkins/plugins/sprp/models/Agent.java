@@ -14,6 +14,7 @@ public class Agent {
     private String dir;
     private boolean reuseNode;
     private String anyOrNone;
+    private boolean none;
     private HashMap<String, String> tools;
 
     Agent(){}
@@ -103,5 +104,13 @@ public class Agent {
 
     public HashMap<String, String> getTools() {
         return tools;
+    }
+
+    public boolean isNone() {
+        return none;
+    }
+
+    public void setNone(boolean none) {
+        this.none = none;
     }
 }
