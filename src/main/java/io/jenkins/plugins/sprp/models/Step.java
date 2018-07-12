@@ -9,15 +9,16 @@ public class Step {
     private Object defaultParameter;
     private HashMap<String, Object> parameters;
 
-    Step(){
+    Step() {
         stepName = "";
     }
 
+    @Nonnull
     public String getStepName() {
         return stepName;
     }
 
-    public void setStepName(String stepName) {
+    public void setStepName(@Nonnull String stepName) {
         this.stepName = stepName;
     }
 

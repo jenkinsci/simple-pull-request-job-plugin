@@ -1,7 +1,5 @@
 package io.jenkins.plugins.sprp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
@@ -11,7 +9,6 @@ import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -23,9 +20,6 @@ public class YamlToPipeline {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
-
-        if(yamlPipeline == null)
-            return "";
 
         // Passing a dummy launcher to detect if the machine is Unix or not
         PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
@@ -41,7 +35,7 @@ public class YamlToPipeline {
         // Stages begin
         scriptLines.add("stages {");
 
-        if(yamlPipeline.getSteps() != null){
+        if (yamlPipeline.getSteps() != null) {
             scriptLines.add("stage('Build') {");
             scriptLines.add("steps {");
 
@@ -51,7 +45,7 @@ public class YamlToPipeline {
             scriptLines.add("}");
         }
 
-        if(yamlPipeline.getStages() != null) {
+        if (yamlPipeline.getStages() != null) {
             for (Stage stage : yamlPipeline.getStages()) {
                 scriptLines.addAll(psg.getStage(stage));
             }
@@ -65,7 +59,7 @@ public class YamlToPipeline {
 
         // This stage will always be generated at last, because if anyone of the above stage fails then we
         // will not push the code to target branch
-        if(yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()){
+        if (yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()) {
             scriptLines.addAll(psg.gitPushStage(gitConfig));
         }
 
@@ -78,27 +72,15 @@ public class YamlToPipeline {
         return psg.autoAddTabs(scriptLines);
     }
 
-    public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener){
-        CustomClassLoaderConstructor constr = new CustomClassLoaderConstructor(this.getClass().getClassLoader());
-        Yaml yaml = new Yaml(constr);
-        try {
-            YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, io.jenkins.plugins.sprp.models.YamlPipeline.class);
+    public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener) {
+        CustomClassLoaderConstructor constructor = new CustomClassLoaderConstructor(this.getClass().getClassLoader());
+        Yaml yaml = new Yaml(constructor);
+        YamlPipeline yamlPipeline = yaml.loadAs(yamlScriptInputStream, YamlPipeline.class);
 
-            // TODO: Just for testing purpose, needs to be removed before release
-            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-            System.out.println(ow.writeValueAsString(yamlPipeline));
-
-            if(yamlPipeline.getStages() != null && yamlPipeline.getSteps() != null){
-                throw new IllegalStateException("Only one of 'steps' or 'stages' must be present in the YAML file.");
-            }
-
-            return yamlPipeline;
+        if (yamlPipeline.getStages() != null && yamlPipeline.getSteps() != null) {
+            throw new IllegalStateException("Only one of 'steps' or 'stages' must be present in the YAML file.");
         }
-        catch (IOException e){
-            listener.getLogger().println("Error while loading YAML");
-            listener.getLogger().println(e.getMessage());
 
-            return null;
-        }
+        return yamlPipeline;
     }
 }

@@ -45,6 +45,10 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
     static final String SCRIPT = "Jenkinsfile.yaml";
     private String scriptPath = SCRIPT;
 
+    @DataBoundConstructor
+    public YAML_BranchProjectFactory() {
+    }
+
     public Object readResolve() {
         if (this.scriptPath == null) {
             this.scriptPath = SCRIPT;
@@ -52,8 +56,9 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
         return this;
     }
 
-    @DataBoundConstructor
-    public YAML_BranchProjectFactory() { }
+    public String getScriptPath() {
+        return scriptPath;
+    }
 
     @DataBoundSetter
     public void setScriptPath(String scriptPath) {
@@ -64,17 +69,16 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
         }
     }
 
-    public String getScriptPath(){
-        return scriptPath;
-    }
-
-    @Override protected FlowDefinition createDefinition() {
+    @Override
+    protected FlowDefinition createDefinition() {
         return new YAML_FlowDefinition(scriptPath);
     }
 
-    @Override protected SCMSourceCriteria getSCMSourceCriteria(SCMSource source) {
+    @Override
+    protected SCMSourceCriteria getSCMSourceCriteria(SCMSource source) {
         return new SCMSourceCriteria() {
-            @Override public boolean isHead(SCMSourceCriteria.Probe probe, TaskListener listener) throws IOException {
+            @Override
+            public boolean isHead(SCMSourceCriteria.Probe probe, TaskListener listener) throws IOException {
                 SCMProbeStat stat = probe.stat(scriptPath);
                 switch (stat.getType()) {
                     case NONEXISTENT:
@@ -108,7 +112,8 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
 
     @Extension
     public static class DescriptorImpl extends AbstractWorkflowBranchProjectFactoryDescriptor {
-        @Override public String getDisplayName() {
+        @Override
+        public String getDisplayName() {
             return "by " + SCRIPT;
         }
 

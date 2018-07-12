@@ -19,10 +19,11 @@ public class Agent {
     public Agent(){}
 
     public Agent(String anyOrNone) throws NotSupportedException {
-        if(anyOrNone.equals("any") || anyOrNone.equals("none"))
+        if(anyOrNone.equals("any") || anyOrNone.equals("none")) {
             this.anyOrNone = anyOrNone;
-        else
+        } else {
             throw new NotSupportedException("Agent type " + anyOrNone + "is not supported.");
+        }
     }
 
     public String getLabel() {
@@ -89,19 +90,19 @@ public class Agent {
         this.reuseNode = reuseNode;
     }
 
-    public void setAnyOrNone(String anyOrNone) {
-        this.anyOrNone = anyOrNone;
-    }
-
     public String getAnyOrNone() {
         return anyOrNone;
     }
 
-    public void setTools(HashMap<String, String> tools) {
-        this.tools = tools;
+    public void setAnyOrNone(String anyOrNone) {
+        this.anyOrNone = anyOrNone;
     }
 
     public HashMap<String, String> getTools() {
         return tools;
+    }
+
+    public void setTools(HashMap<String, String> tools) {
+        this.tools = tools;
     }
 }
