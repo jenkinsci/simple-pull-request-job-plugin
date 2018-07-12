@@ -109,7 +109,7 @@ public class PipelineSnippetGenerator {
             }
             else if(agent.getLabel() != null && agent.getCustomWorkspace() != null){
                 agentLines.add("agent {");
-                agentLines.add("node{");
+                agentLines.add("node {");
                 agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
@@ -370,7 +370,7 @@ public class PipelineSnippetGenerator {
         ArrayList<String> snippetLines = new ArrayList<>();
         snippetLines.add("stage('" + stageName + "') {");
 
-        if (!stage.getAgent().getAnyOrNone().equals("any")) {
+        if (stage.getAgent() != null && !stage.getAgent().getAnyOrNone().equals("any")) {
             snippetLines.addAll(getAgent(stage.getAgent()));
         }
 

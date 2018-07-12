@@ -57,14 +57,20 @@ public class AgentTest {
                         "}\n";
 
         assertEquals(agentSnippetExpected, agentSnippetActual);
+    }
 
+    @Test
+    public void dockerGenerationTest1(){
+        Agent agent = new Agent();
+        agent.setDockerImage("my-docker-image");
+        agent.setArgs("-v temp:temp");
         agent.setAlwaysPull(true);
         agent.setReuseNode(true);
 
-        agentSnippetActual =
+        String agentSnippetActual =
                 pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
 
-        agentSnippetExpected =
+        String agentSnippetExpected =
                 "agent {\n" +
                         "\tdocker {\n" +
                         "\t\timage 'my-docker-image'\n" +
@@ -75,14 +81,20 @@ public class AgentTest {
                         "}\n";
 
         assertEquals(agentSnippetExpected, agentSnippetActual);
+    }
 
+    @Test
+    public void dockerGenerationTest2(){
+        Agent agent = new Agent();
+        agent.setDockerImage("my-docker-image");
+        agent.setArgs("-v temp:temp");
         agent.setAlwaysPull(false);
         agent.setReuseNode(false);
 
-        agentSnippetActual =
+        String agentSnippetActual =
                 pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
 
-        agentSnippetExpected =
+        String agentSnippetExpected =
                 "agent {\n" +
                         "\tdocker {\n" +
                         "\t\timage 'my-docker-image'\n" +
@@ -115,16 +127,22 @@ public class AgentTest {
                         "}\n";
 
         assertEquals(agentSnippetExpected, agentSnippetActual);
+    }
 
+    @Test
+    public void dockerfileGenerationTest2() {
+        Agent agent = new Agent();
+        agent.setDockerfile("my-dockerfile");
+        agent.setArgs("-v temp:temp");
         agent.setLabel("my-label");
         agent.setCustomWorkspace("my-customWorkspace");
         agent.setDir("dir-path");
         agent.setReuseNode(true);
 
-        agentSnippetActual =
+        String agentSnippetActual =
                 pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
 
-        agentSnippetExpected =
+        String agentSnippetExpected =
                 "agent {\n" +
                         "\tdockerfile {\n" +
                         "\t\tfilename 'my-dockerfile'\n" +
@@ -137,13 +155,22 @@ public class AgentTest {
                         "}\n";
 
         assertEquals(agentSnippetExpected, agentSnippetActual);
+    }
 
+    @Test
+    public void dockerfileGenerationTest3() {
+        Agent agent = new Agent();
+        agent.setDockerfile("my-dockerfile");
+        agent.setArgs("-v temp:temp");
+        agent.setLabel("my-label");
+        agent.setCustomWorkspace("my-customWorkspace");
+        agent.setDir("dir-path");
         agent.setReuseNode(false);
 
-        agentSnippetActual =
+        String agentSnippetActual =
                 pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
 
-        agentSnippetExpected =
+        String agentSnippetExpected =
                 "agent {\n" +
                         "\tdockerfile {\n" +
                         "\t\tfilename 'my-dockerfile'\n" +
