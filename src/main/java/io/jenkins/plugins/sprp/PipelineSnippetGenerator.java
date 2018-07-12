@@ -109,7 +109,7 @@ public class PipelineSnippetGenerator {
             }
             else if(agent.getLabel() != null && agent.getCustomWorkspace() != null){
                 agentLines.add("agent {");
-                agentLines.add("node{");
+                agentLines.add("node {");
                 agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
