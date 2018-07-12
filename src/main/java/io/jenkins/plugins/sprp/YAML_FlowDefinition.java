@@ -56,6 +56,10 @@ public class YAML_FlowDefinition extends FlowDefinition {
     private String scriptPath;
     private GitConfig gitConfig;
 
+    public YAML_FlowDefinition(String scriptPath) {
+        this.scriptPath = scriptPath;
+    }
+
     public Object readResolve() {
         if (this.scriptPath == null) {
             this.scriptPath = "Jenkinsfile.yaml";
@@ -63,13 +67,9 @@ public class YAML_FlowDefinition extends FlowDefinition {
         return this;
     }
 
-    public YAML_FlowDefinition(String scriptPath) {
-        this.scriptPath = scriptPath;
-    }
-
     @Override
     public FlowExecution create(FlowExecutionOwner owner, TaskListener listener,
-                                          List<? extends Action> actions) throws Exception {
+                                List<? extends Action> actions) throws Exception {
         Queue.Executable exec = owner.getExecutable();
         if (!(exec instanceof WorkflowRun)) {
             throw new IllegalStateException("inappropriate context");
@@ -96,15 +96,16 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         SCMHead head = branch.getHead();
 
-        if("Pull Request".equals(head.getPronoun())){
+        if ("Pull Request".equals(head.getPronoun())) {
             ChangeRequestSCMHead2 changeRequestSCMHead2 = (ChangeRequestSCMHead2) branch.getHead();
             head = changeRequestSCMHead2.getTarget();
         }
 
         SCMRevision tip = scmSource.fetch(head, listener);
 
-        if(tip == null)
+        if (tip == null) {
             throw new IllegalStateException("Cannot determine the revision.");
+        }
 
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
@@ -135,7 +136,8 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
         @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         @Nonnull
-        @Override public String getDisplayName() {
+        @Override
+        public String getDisplayName() {
             return Messages.YAML_FlowDefinition_DescriptorImpl_DisplayName();
         }
     }

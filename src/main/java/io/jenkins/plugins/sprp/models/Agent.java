@@ -17,13 +17,15 @@ public class Agent {
     private boolean none;
     private HashMap<String, String> tools;
 
-    Agent(){}
+    Agent() {
+    }
 
     Agent(String anyOrNone) throws NotSupportedException {
-        if(anyOrNone.equals("any") || anyOrNone.equals("none"))
+        if (anyOrNone.equals("any") || anyOrNone.equals("none")) {
             this.anyOrNone = anyOrNone;
-        else
+        } else {
             throw new NotSupportedException("Agent type " + anyOrNone + "is not supported.");
+        }
     }
 
     public String getLabel() {
@@ -90,16 +92,12 @@ public class Agent {
         this.reuseNode = reuseNode;
     }
 
-    public void setAnyOrNone(String anyOrNone) {
-        this.anyOrNone = anyOrNone;
-    }
-
     public String getAnyOrNone() {
         return anyOrNone;
     }
 
-    public void setTools(HashMap<String, String> tools) {
-        this.tools = tools;
+    public void setAnyOrNone(String anyOrNone) {
+        this.anyOrNone = anyOrNone;
     }
 
     public HashMap<String, String> getTools() {
@@ -112,5 +110,8 @@ public class Agent {
 
     public void setNone(boolean none) {
         this.none = none;
+      
+    public void setTools(HashMap<String, String> tools) {
+        this.tools = tools;
     }
 }
