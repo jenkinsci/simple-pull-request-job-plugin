@@ -21,10 +21,6 @@ public class YamlToPipeline {
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
-        if (yamlPipeline == null) {
-            return "";
-        }
-
         // Passing a dummy launcher to detect if the machine is Unix or not
         PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
 
