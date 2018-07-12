@@ -30,10 +30,6 @@ import jenkins.branch.MultiBranchProjectFactoryDescriptor;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceCriteria;
 import org.apache.commons.lang.StringUtils;
-//import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowBranchProjectFactory;
-//import org.jenkinsci.plugins.workflow.multibranch.AbstractWorkflowMultiBranchProjectFactory;
-//import org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory;
-//import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -47,11 +43,20 @@ import java.io.IOException;
 public class YAML_MultiBranchProjectFactory extends WorkflowMultiBranchProjectFactory {
     private String scriptPath = YAML_BranchProjectFactory.SCRIPT;
 
+    @DataBoundConstructor
+    public YAML_MultiBranchProjectFactory() {
+    }
+
     public Object readResolve() {
         if (this.scriptPath == null) {
             this.scriptPath = YAML_BranchProjectFactory.SCRIPT;
         }
+
         return this;
+    }
+
+    public String getScriptPath() {
+        return scriptPath;
     }
 
     @DataBoundSetter
@@ -63,12 +68,8 @@ public class YAML_MultiBranchProjectFactory extends WorkflowMultiBranchProjectFa
         }
     }
 
-    public String getScriptPath() { return scriptPath; }
-
-    @DataBoundConstructor
-    public YAML_MultiBranchProjectFactory() { }
-
-    @Override protected SCMSourceCriteria getSCMSourceCriteria(SCMSource source) {
+    @Override
+    protected SCMSourceCriteria getSCMSourceCriteria(SCMSource source) {
         return newProjectFactorySCMSourceCriteria(source);
     }
 
@@ -84,22 +85,24 @@ public class YAML_MultiBranchProjectFactory extends WorkflowMultiBranchProjectFa
         return workflowBranchProjectFactory.getSCMSourceCriteria(source);
     }
 
-    @Extension
-    public static class DescriptorImpl extends MultiBranchProjectFactoryDescriptor {
-
-        @Override public MultiBranchProjectFactory newInstance() {
-            return new org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory();
-        }
-
-        @Override public String getDisplayName() {
-            return "Pipeline " + YAML_BranchProjectFactory.SCRIPT;
-        }
-
-    }
-
     @Override
     protected void customize(org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject project)
             throws IOException, InterruptedException {
         project.setProjectFactory(newProjectFactory());
+    }
+
+    @Extension
+    public static class DescriptorImpl extends MultiBranchProjectFactoryDescriptor {
+
+        @Override
+        public MultiBranchProjectFactory newInstance() {
+            return new org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "Pipeline " + YAML_BranchProjectFactory.SCRIPT;
+        }
+
     }
 }

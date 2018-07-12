@@ -5,29 +5,30 @@ public class GitConfig {
     private String gitBranch;
     private String credentialsId;
 
-    GitConfig(){}
-
-    public void setCredentialsId(String credentialsId) {
-        this.credentialsId = credentialsId;
+    GitConfig() {
     }
 
     public String getCredentialsId() {
         return credentialsId;
     }
 
-    public void setGitBranch(String gitBranch) {
-        this.gitBranch = gitBranch;
+    public void setCredentialsId(String credentialsId) {
+        this.credentialsId = credentialsId;
     }
 
     public String getGitBranch() {
         return gitBranch;
     }
 
-    public void setGitUrl(String gitUrl) {
-        this.gitUrl = gitUrl;
+    public void setGitBranch(String gitBranch) {
+        this.gitBranch = gitBranch;
     }
 
     public String getGitUrl() {
         return gitUrl;
+    }
+
+    public void setGitUrl(String gitUrl) {
+        this.gitUrl = gitUrl;
     }
 }

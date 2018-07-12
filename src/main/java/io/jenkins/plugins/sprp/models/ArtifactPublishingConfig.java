@@ -5,7 +5,8 @@ public class ArtifactPublishingConfig {
     private String user;
     private String credentialId;
 
-    ArtifactPublishingConfig(){}
+    ArtifactPublishingConfig() {
+    }
 
     public String getCredentialId() {
         return credentialId;
