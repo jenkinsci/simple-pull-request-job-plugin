@@ -4,7 +4,7 @@
 
 configuration:
   # Changes will be pushed to target branch if build and tests were successful
-  pushPROnSuccess: true
+  pushPrOnSuccess: true
 
   # Trusted PR approvers
   prApprovers:
@@ -19,7 +19,7 @@ configuration:
 
 configuration:
   # Changes will not be pushed to target branch no matter what is the result of buld
-  pushPROnSuccess: false
+  pushPrOnSuccess: false
 
   # Trusted PR approvers
   prApprovers:

@@ -2,7 +2,7 @@
 
 ```yaml
 stages:
-  - name: satge1
+  - name: stage1
     agent: any
     
     steps:
@@ -29,7 +29,7 @@ stages:
           echo: "stage2 was a success"
 post:
   always:
-    - sh: "Pipeline completed"
+    - echo: "Pipeline completed"
 ```
 
 We can define all other sections also
@@ -47,7 +47,7 @@ agent:
     jdk : jdk8
 
 configuration:
-  pushPROnSuccess: true
+  pushPrOnSuccess: true
 
   prApprovers:
     - username1
@@ -70,7 +70,7 @@ environment:
       variable : LOGIN
 
 stages:
-  - name: satge1
+  - name: stage1
     agent: any
     
     steps:
@@ -97,5 +97,5 @@ stages:
           echo: "stage2 was a success"
 post:
   always:
-    - sh: "Pipeline completed"
+    - echo: "Pipeline completed"
 ```

@@ -41,7 +41,7 @@ Note:
 
 ### configuration
 This section has only two properties for now. They are:
-0. **pushPROnSuccess**: This is a boolean property with default value false. On true the plugin 
+0. **pushPrOnSuccess**: This is a boolean property with default value false. On true the plugin 
 will push the changes to the target branch if the build is success and all tests
 passes else not. On the other hand on a false value no changes will not be pushed no matter what
 is the build result or all tests passes or not.
@@ -55,7 +55,7 @@ a PR then only a build will be started else not. This function is not implemente
 ##### Type: list of string
 
 List of location path can be specified here in the [Ant glob syntax](http://ant.apache.org/manual/Types/fileset.html).
-All these reports will be publish at the end of build.
+All these reports will be published at the end of build.
 
 **Example** : "\*\*/build/test-reports/\*.xml"
 
@@ -65,17 +65,17 @@ All these reports will be publish at the end of build.
 
 Location of findbugs reports can be specified here in the 
 [Ant glob syntax](http://ant.apache.org/manual/Types/fileset.html).
-These report(s) will be publish at the end of build.
+These report(s) will be published at the end of build.
 
 ### environment
-This section have two properties:
+This section has two properties:
 1. **variables :** Any environment variable that user wants to use in his/her scripts can be 
 defined here and it will be available to all the scripts at the time of build.
 
 2. **credentials :** Any credentials (already configured in Jenkins instance) can be used in 
 all user scripts by **credentials** property.
 
-[See environment example for more details](EnvironmentExamle.md)
+[See environment example for more details](EnvironmentExample.md)
 
 ### stages
 This section is used to declare multiple stages for the pipeline. For now this section 

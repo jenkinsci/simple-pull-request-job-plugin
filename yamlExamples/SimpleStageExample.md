@@ -22,7 +22,7 @@ We still have option to define more sections like "configuration"
 agent: any
 
 configuration:
-  pushPROnSuccess: true
+  pushPrOnSuccess: true
 
 environment:
   variables:
