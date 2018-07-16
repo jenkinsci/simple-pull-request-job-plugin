@@ -5,6 +5,8 @@ import hudson.model.UnprotectedRootAction;
 import hudson.security.csrf.CrumbExclusion;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -14,18 +16,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
- * @author Honza Brázdil jbrazdil@redhat.com
+ * @author Abhishek Gautam gautamabhishek46
  */
+@Restricted(NoExternalUse.class)
 @Extension
 public class YamlRootAction implements UnprotectedRootAction {
 
-    static final String URL = "yamlhook";
-    static final String BUILD_CONFIGURATION_MODE = "by Jenkinsfile.yaml";
-
-    private static final Logger LOGGER = Logger.getLogger(YamlRootAction.class.getName());
+    static final String URL = "yaml-as-pipeline";
 
     public String getIconFileName() {
         return null;
@@ -46,15 +45,15 @@ public class YamlRootAction implements UnprotectedRootAction {
         // Can't find a way to get repository and repository url from the project variable
         // Hence triggering branch indexing of all projects, it will create jobs for new branches and pull requests and
         // delete jobs of closed pull requests.
-        for(WorkflowMultiBranchProject project: projects){
-            if(project.getProjectFactory().getDescriptor().getDisplayName().equals(YamlRootAction.BUILD_CONFIGURATION_MODE)) {
+        for (WorkflowMultiBranchProject project : projects) {
+            if (project.getProjectFactory().getDescriptor().isInstance(new YAML_BranchProjectFactory())) {
                 project.getIndexing().run();
             }
         }
     }
 
     @Extension
-    public static class GhprbRootActionCrumbExclusion extends CrumbExclusion {
+    public static class YamlRootActionCrumbExclusion extends CrumbExclusion {
 
         @Override
         public boolean process(HttpServletRequest req,
