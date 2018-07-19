@@ -61,6 +61,9 @@ public class PipelineSnippetGenerator {
             agentLines.add("agent any");
         } else if (agent.getAnyOrNone() != null)
             agentLines.add("agent " + agent.getAnyOrNone());
+        else if(agent.isNone()) {
+            agentLines.add("agent none");
+        }
         else {
 
             if (agent.getDockerImage() != null) {
