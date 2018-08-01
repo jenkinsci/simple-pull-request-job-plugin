@@ -239,14 +239,6 @@ public class PipelineSnippetGenerator {
         return this.launcher.isUnix();
     }
 
-    private String completeShellScriptPath(String scriptPath) {
-        if (isUnix()) {
-            return scriptPath + ".sh";
-        } else {
-            return scriptPath + ".bat";
-        }
-    }
-
     private String stepConfigurator(Step step)
             throws IllegalAccessException, InvocationTargetException,
             InstantiationException, ConfiguratorException, NotSupportedException, NoSuchMethodException {
@@ -262,14 +254,6 @@ public class PipelineSnippetGenerator {
         }
 
         Class clazz = stepDescriptor.clazz;
-
-        if (step.getStepName().equals("sh")) {
-            if (step.getDefaultParameter() != null) {
-                step.setDefaultParameter(completeShellScriptPath((String) step.getDefaultParameter()));
-            } else {
-                step.getParameters().put("script", completeShellScriptPath(step.getParameters().get("script").toString()));
-            }
-        }
 
         if (step.getDefaultParameter() != null) {
             Constructor constructor = Configurator.getDataBoundConstructor(clazz);
