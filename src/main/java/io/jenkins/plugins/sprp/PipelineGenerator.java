@@ -1,7 +1,9 @@
 package io.jenkins.plugins.sprp;
 
-import hudson.Launcher;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
+import io.jenkins.plugins.sprp.impl.AgentGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.Environment;
@@ -17,9 +19,12 @@ import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.jenkinsci.plugins.casc.model.Mapping;
 import org.jenkinsci.plugins.casc.model.Scalar;
 import org.jenkinsci.plugins.casc.model.Sequence;
+import org.jenkinsci.plugins.structs.SymbolLookup;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -28,91 +33,76 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PipelineSnippetGenerator {
-    static private Logger logger = Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
-    private Launcher launcher;
+public abstract class PipelineGenerator<T> implements ExtensionPoint {
+    static private Logger logger = Logger.getLogger(PipelineGenerator.class.getClass().getName());
 
-    PipelineSnippetGenerator(Launcher launcher) {
-        this.launcher = launcher;
+    @Nonnull
+    public abstract List<String> toPipeline(@CheckForNull T object) throws ConversionException;
+
+    public abstract boolean canConvert(@Nonnull Object object);
+
+    public static ExtensionList<PipelineGenerator> all() {
+        return ExtensionList.lookup(PipelineGenerator.class);
     }
 
-    private List<String> getCommonOptionsOfAgent(Agent agent) {
-        ArrayList<String> snippetLines = new ArrayList<>();
-
-        if (agent.getLabel() != null) {
-            snippetLines.add("label '" + agent.getLabel() + "'");
-        }
-
-        if (agent.getCustomWorkspace() != null) {
-            snippetLines.add("customWorkspace '" + agent.getCustomWorkspace() + "'");
-        }
-
-        if (agent.getDockerfile() != null || agent.getDockerImage() != null) {
-            snippetLines.add("reuseNode " + agent.getReuseNode() + "");
-        }
-
-        return snippetLines;
+    @CheckForNull
+    public static PipelineGenerator lookupForName(@Nonnull String name) {
+        return SymbolLookup.get().find(PipelineGenerator.class, name);
     }
 
-    public List<String> getAgent(Agent agent) {
-        ArrayList<String> agentLines = new ArrayList<>();
-
-        if (agent == null) {
-            agentLines.add("agent any");
-        } else if (agent.getAnyOrNone() != null)
-            agentLines.add("agent " + agent.getAnyOrNone());
-        else if(agent.isNone()) {
-            agentLines.add("agent none");
-        }
-        else {
-
-            if (agent.getDockerImage() != null) {
-                agentLines.add("agent {");
-                agentLines.add("docker {");
-                agentLines.add("image '" + agent.getDockerImage() + "'");
-
-                if (agent.getArgs() != null) {
-                    agentLines.add("args '" + agent.getArgs() + "'");
-                }
-
-                agentLines.add("alwaysPull " + agent.getAlwaysPull() + "");
-                agentLines.addAll(getCommonOptionsOfAgent(agent));
-                agentLines.add("}");
-                agentLines.add("}");
-            } else if (agent.getDockerfile() != null) {
-                agentLines.add("agent {");
-                agentLines.add("dockerfile {");
-                agentLines.add("filename '" + agent.getDockerfile() + "'");
-
-                if (agent.getDir() != null) {
-                    agentLines.add("dir '" + agent.getDir() + "'");
-                }
-
-                if (agent.getArgs() != null) {
-                    agentLines.add("additionalBuildArgs '" + agent.getArgs() + "'");
-                }
-
-                agentLines.addAll(getCommonOptionsOfAgent(agent));
-                agentLines.add("}");
-                agentLines.add("}");
-            } else if (agent.getLabel() != null && agent.getCustomWorkspace() != null) {
-                agentLines.add("agent {");
-                agentLines.add("node {");
-                agentLines.addAll(getCommonOptionsOfAgent(agent));
-                agentLines.add("}");
-                agentLines.add("}");
-            } else {
-                agentLines.add("agent any");
+    @CheckForNull
+    public static <T extends PipelineGenerator> T lookupConverter(Class<T> clazz) {
+        for (PipelineGenerator gen : all()) {
+            if (clazz.equals(gen.getClass())) {
+                return clazz.cast(gen);
             }
-
         }
-
-        if (agent != null) {
-            agentLines.addAll(getTools(agent.getTools()));
-        }
-
-        return agentLines;
+        return null;
     }
+
+    @Nonnull
+    public static <T extends PipelineGenerator> T lookupConverterOrFail(Class<T> clazz)
+            throws ConversionException {
+        T converter = lookupConverter(clazz);
+        if (converter == null) {
+            throw new ConversionException("Failed to find converter: " + clazz);
+        }
+        return converter;
+    }
+
+    @CheckForNull
+    public static PipelineGenerator lookup(@Nonnull Object object) {
+        for (PipelineGenerator gen : all()) {
+            if (gen.canConvert(object)) {
+                return gen;
+            }
+        }
+        return null;
+    }
+
+    @Nonnull
+    public static List<String> convert(@Nonnull Object object) throws ConversionException {
+        PipelineGenerator gen = lookup(object);
+        if (gen == null) {
+            // TODO: add better diagnostics (field matching)
+            throw new ConversionException("Cannot find converter for the object: " + object.getClass());
+        }
+        //TODO: handle raw type conversion risks
+        return gen.toPipeline(object);
+    }
+
+    @Nonnull
+    public static List<String> convert(@Nonnull String converterName, @CheckForNull Object object) throws ConversionException {
+        PipelineGenerator gen = lookupForName(converterName);
+        if (gen == null) {
+            // TODO: add better diagnostics (field matching)
+            throw new ConversionException("Cannot find converter for the type: " + converterName);
+        }
+        //TODO: handle raw type conversion risks
+        return gen.toPipeline(object);
+    }
+
+    // TODO: Move all things below outside to Generator extensions
 
     public List<String> getTools(HashMap<String, String> tools) {
         ArrayList<String> snippetLines = new ArrayList<>();
@@ -235,10 +225,6 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    public boolean isUnix() {
-        return this.launcher.isUnix();
-    }
-
     private String stepConfigurator(Step step)
             throws IllegalAccessException, InvocationTargetException,
             InstantiationException, ConfiguratorException, NotSupportedException, NoSuchMethodException {
@@ -331,15 +317,17 @@ public class PipelineSnippetGenerator {
         return sequence;
     }
 
-    public List<String> getStage(Stage stage) throws InstantiationException, IllegalAccessException, ConfiguratorException,
+    public List<String> getStage(Stage stage) throws ConversionException, InstantiationException, IllegalAccessException, ConfiguratorException,
             InvocationTargetException, NotSupportedException, NoSuchMethodException {
         String stageName = stage.getName();
 
         ArrayList<String> snippetLines = new ArrayList<>();
         snippetLines.add("stage('" + stageName + "') {");
 
-        if (!stage.getAgent().getAnyOrNone().equals("any")) {
-            snippetLines.addAll(getAgent(stage.getAgent()));
+        final Agent agent = stage.getAgent();
+        if (agent != null && !agent.getAnyOrNone().equals("any")) {
+            AgentGenerator gen = lookupConverterOrFail(AgentGenerator.class);
+            snippetLines.addAll(gen.toPipeline(agent));
         }
 
         snippetLines.add("steps {");
@@ -399,7 +387,7 @@ public class PipelineSnippetGenerator {
         return snippetLines;
     }
 
-    public String autoAddTabs(ArrayList<String> snippetLines) {
+    public static String autoAddTabs(ArrayList<String> snippetLines) {
         int numOfTabs = 0;
         StringBuilder snippet = new StringBuilder();
 

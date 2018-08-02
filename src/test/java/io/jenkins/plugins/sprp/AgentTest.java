@@ -1,7 +1,8 @@
 package io.jenkins.plugins.sprp;
 
-import hudson.Launcher;
+import io.jenkins.plugins.sprp.impl.AgentGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -14,8 +15,12 @@ public class AgentTest {
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
-    private final Launcher launcher = (Launcher) jenkinsRule.createLocalLauncher();
-    private PipelineSnippetGenerator pipelineSnippetGenerator = new PipelineSnippetGenerator(launcher);
+    private AgentGenerator generator;
+
+    @Before
+    public void setupGenerator() {
+        generator = PipelineGenerator.lookupConverter(AgentGenerator.class);
+    }
 
     @Test
     public void nodeGenerationTest() {
@@ -24,7 +29,7 @@ public class AgentTest {
         agent.setCustomWorkspace("my-customWorkspace");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -44,7 +49,7 @@ public class AgentTest {
         agent.setArgs("-v temp:temp");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -68,7 +73,7 @@ public class AgentTest {
         agent.setReuseNode(true);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -92,7 +97,7 @@ public class AgentTest {
         agent.setReuseNode(false);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -115,7 +120,7 @@ public class AgentTest {
         agent.setArgs("-v temp:temp");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -140,7 +145,7 @@ public class AgentTest {
         agent.setReuseNode(true);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -168,7 +173,7 @@ public class AgentTest {
         agent.setReuseNode(false);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +

@@ -1,6 +1,7 @@
 package io.jenkins.plugins.sprp;
 
 import hudson.model.TaskListener;
+import io.jenkins.plugins.sprp.impl.AgentGenerator;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
@@ -14,20 +15,32 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class YamlToPipeline {
+
     public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
-            throws InvocationTargetException, InstantiationException, ConfiguratorException,
-            IllegalAccessException, NotSupportedException, NoSuchMethodException {
+            throws ConversionException {
+        try {
+            return _generatePipeline(yamlScriptInputStream, gitConfig, listener);
+        } catch (ConversionException ex) {
+            throw  ex;
+        } catch (Exception ex) {
+            throw new ConversionException("Unhandled exception", ex);
+        }
+    }
+
+    //TODO: Remove once custom exceptions are cleaned up
+    private String _generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
+            throws Exception {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
-        // Passing a dummy launcher to detect if the machine is Unix or not
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
+        //TODO: remove once all converters are detached
+        PipelineGenerator psg = new AgentGenerator();
 
         scriptLines.add("pipeline {");
 
         // Adding outer agent and tools section
-        scriptLines.addAll(psg.getAgent(yamlPipeline.getAgent()));
+        scriptLines.addAll(PipelineGenerator.convert("agent", yamlPipeline.getAgent()));
 
         // Adding environment
         scriptLines.addAll(psg.getEnvironment(yamlPipeline.getEnvironment()));

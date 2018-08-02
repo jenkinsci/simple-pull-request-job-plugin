@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.models;
 
+import javax.annotation.CheckForNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 public class Stage {
     private String name;
+    @CheckForNull
     private Agent agent;
     private ArrayList<LinkedHashMap<String, Step>> steps;
     private Post post;
@@ -61,6 +63,7 @@ public class Stage {
         this.steps = generateSteps(stepsList);
     }
 
+    @CheckForNull
     public Agent getAgent() {
         return agent;
     }
