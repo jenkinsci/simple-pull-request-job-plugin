@@ -10,13 +10,17 @@ import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 public class YamlToPipeline {
 
-    public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
+    public String generatePipeline(@Nonnull InputStream yamlScriptInputStream,
+                                   @CheckForNull GitConfig gitConfig,
+                                   @Nonnull TaskListener listener)
             throws ConversionException {
         try {
             return _generatePipeline(yamlScriptInputStream, gitConfig, listener);
@@ -28,7 +32,9 @@ public class YamlToPipeline {
     }
 
     //TODO: Remove once custom exceptions are cleaned up
-    private String _generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
+    private String _generatePipeline(@Nonnull InputStream yamlScriptInputStream,
+                                     @CheckForNull GitConfig gitConfig,
+                                     @Nonnull TaskListener listener)
             throws Exception {
         ArrayList<String> scriptLines = new ArrayList<>();
 
@@ -73,6 +79,9 @@ public class YamlToPipeline {
         // This stage will always be generated at last, because if anyone of the above stage fails then we
         // will not push the code to target branch
         if (yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()) {
+            if (gitConfig == null) {
+                throw new ConversionException("Git Configuration is not defined, but it is required for the Git Push");
+            }
             scriptLines.addAll(psg.gitPushStage(gitConfig));
         }
 

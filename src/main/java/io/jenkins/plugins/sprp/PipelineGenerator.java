@@ -372,7 +372,7 @@ public abstract class PipelineGenerator<T> implements ExtensionPoint {
         return snippetLines;
     }
 
-    public List<String> gitPushStage(GitConfig gitConfig) {
+    public List<String> gitPushStage(@Nonnull GitConfig gitConfig) {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         snippetLines.add("stage('Git Push') {");
