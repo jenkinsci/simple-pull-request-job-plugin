@@ -1,16 +1,19 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.impl;
 
+import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.impl.AgentGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
+@For(AgentGenerator.class)
 public class AgentTest {
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();

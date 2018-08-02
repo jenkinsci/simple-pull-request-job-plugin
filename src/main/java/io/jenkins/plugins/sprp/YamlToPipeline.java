@@ -2,6 +2,7 @@ package io.jenkins.plugins.sprp;
 
 import hudson.model.TaskListener;
 import io.jenkins.plugins.sprp.impl.AgentGenerator;
+import io.jenkins.plugins.sprp.models.CustomPipelineSection;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.YamlPipeline;
 import jenkins.model.Jenkins;
@@ -89,8 +90,11 @@ public class YamlToPipeline {
 
         scriptLines.addAll(psg.getPostSection(yamlPipeline.getPost()));
 
-        scriptLines.add("}");
+        for (CustomPipelineSection section : yamlPipeline.getSections()) {
+            scriptLines.addAll(PipelineGenerator.convert(section));
+        }
 
+        scriptLines.add("}");
         return psg.autoAddTabs(scriptLines);
     }
 
