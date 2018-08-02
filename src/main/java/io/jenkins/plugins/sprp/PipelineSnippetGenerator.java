@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp;
 
+import hudson.Extension;
 import hudson.Launcher;
 import hudson.model.Descriptor;
 import io.jenkins.plugins.sprp.models.Agent;
@@ -28,7 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PipelineSnippetGenerator {
+@Extension
+public class PipelineSnippetGenerator extends AbstractPSG {
     static private Logger logger = Logger.getLogger(PipelineSnippetGenerator.class.getClass().getName());
     private Launcher launcher;
 
