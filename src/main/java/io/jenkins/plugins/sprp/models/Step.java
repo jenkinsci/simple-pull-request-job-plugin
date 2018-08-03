@@ -9,7 +9,7 @@ public class Step {
     private Object defaultParameter;
     private HashMap<String, Object> parameters;
 
-    Step() {
+    public Step() {
         stepName = "";
     }
 

@@ -1,17 +1,21 @@
-package io.jenkins.plugins.sprp.impl;
+package io.jenkins.plugins.sprp.generators;
 
 import hudson.Extension;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
 import org.jenkinsci.Symbol;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Extension
 @Symbol("agent")
 public class AgentGenerator extends PipelineGenerator<Agent> {
 
+    @Nonnull
     @Override
     public List<String> toPipeline(Agent agent) {
         ArrayList<String> agentLines = new ArrayList<>();
@@ -54,7 +58,7 @@ public class AgentGenerator extends PipelineGenerator<Agent> {
                 agentLines.addAll(getCommonOptionsOfAgent(agent));
                 agentLines.add("}");
                 agentLines.add("}");
-            } else if (agent.getLabel() != null && agent.getCustomWorkspace() != null) {
+            } else if (agent.getLabel() != null || agent.getCustomWorkspace() != null) {
                 agentLines.add("agent {");
                 agentLines.add("node {");
                 agentLines.addAll(getCommonOptionsOfAgent(agent));
@@ -63,7 +67,6 @@ public class AgentGenerator extends PipelineGenerator<Agent> {
             } else {
                 agentLines.add("agent any");
             }
-
         }
 
         if (agent != null) {
@@ -74,7 +77,7 @@ public class AgentGenerator extends PipelineGenerator<Agent> {
     }
 
     @Override
-    public boolean canConvert(Object object) {
+    public boolean canConvert(@Nonnull Object object) {
         return object instanceof Agent;
     }
 
@@ -92,6 +95,24 @@ public class AgentGenerator extends PipelineGenerator<Agent> {
         if (agent.getDockerfile() != null || agent.getDockerImage() != null) {
             snippetLines.add("reuseNode " + agent.getReuseNode() + "");
         }
+
+        return snippetLines;
+    }
+
+    private List<String> getTools(HashMap<String, String> tools) {
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if (tools == null) {
+            return snippetLines;
+        }
+
+        snippetLines.add("tools {");
+
+        for (Map.Entry<String, String> entry : tools.entrySet()) {
+            snippetLines.add(entry.getKey() + " '" + entry.getValue() + "'");
+        }
+
+        snippetLines.add("}");
 
         return snippetLines;
     }

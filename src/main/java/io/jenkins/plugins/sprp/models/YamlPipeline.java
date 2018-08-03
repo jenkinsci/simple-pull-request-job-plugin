@@ -24,7 +24,7 @@ public class YamlPipeline {
     @CheckForNull
     private ArrayList<CustomPipelineSection> sections;
 
-    YamlPipeline() {
+    public YamlPipeline() {
     }
 
     public Agent getAgent() {

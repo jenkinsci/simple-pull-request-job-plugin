@@ -1,7 +1,6 @@
-package io.jenkins.plugins.sprp.impl;
+package io.jenkins.plugins.sprp.generators;
 
 import io.jenkins.plugins.sprp.PipelineGenerator;
-import io.jenkins.plugins.sprp.impl.AgentGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,6 +22,23 @@ public class AgentTest {
     @Before
     public void setupGenerator() {
         generator = PipelineGenerator.lookupConverter(AgentGenerator.class);
+    }
+    @Test
+    public void nodeGenerationLabelOnlyTest() {
+        Agent agent = new Agent();
+        agent.setLabel("my-label");
+
+        String agentSnippetActual =
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
+
+        String agentSnippetExpected =
+                "agent {\n" +
+                        "\tnode {\n" +
+                        "\t\tlabel 'my-label'\n" +
+                        "\t}\n" +
+                        "}\n";
+
+        assertEquals(agentSnippetExpected, agentSnippetActual);
     }
 
     @Test

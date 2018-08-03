@@ -13,7 +13,7 @@ public class Stage {
     private ArrayList<LinkedHashMap<String, Step>> steps;
     private Post post;
 
-    Stage() {
+    public Stage() {
     }
 
     static ArrayList<LinkedHashMap<String, Step>> generateSteps(ArrayList<LinkedHashMap<String, Object>> stepsList) {

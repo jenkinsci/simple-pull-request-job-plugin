@@ -1,11 +1,8 @@
-package io.jenkins.plugins.sprp.impl;
+package io.jenkins.plugins.sprp.generators;
 
 import io.jenkins.plugins.sprp.ConversionException;
-import io.jenkins.plugins.sprp.GitConfig;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.YamlToPipeline;
-import io.jenkins.plugins.sprp.impl.CustomSectionGenerator;
-import jenkins.model.Jenkins;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.hamcrest.CoreMatchers;
 import org.jenkinsci.Symbol;

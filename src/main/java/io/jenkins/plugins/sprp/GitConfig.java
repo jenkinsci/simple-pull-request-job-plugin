@@ -5,7 +5,7 @@ public class GitConfig {
     private String gitBranch;
     private String credentialsId;
 
-    GitConfig() {
+    public GitConfig() {
     }
 
     public String getCredentialsId() {
