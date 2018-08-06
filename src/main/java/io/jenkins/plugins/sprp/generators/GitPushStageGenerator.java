@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.GitConfig;
 import io.jenkins.plugins.sprp.PipelineGenerator;
@@ -13,6 +14,7 @@ import java.util.List;
 @Symbol("gitPushStage")
 public class GitPushStageGenerator extends PipelineGenerator<GitConfig> {
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
     public List<String> toPipeline(GitConfig gitConfig) {
