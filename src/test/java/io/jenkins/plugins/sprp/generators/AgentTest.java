@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
 import org.junit.Before;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 @For(AgentGenerator.class)
 public class AgentTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
@@ -130,7 +132,6 @@ public class AgentTest {
 
         assertEquals(agentSnippetExpected, agentSnippetActual);
     }
-
 
     @Test
     public void dockerfileGenerationTest() {

@@ -6,6 +6,12 @@ This project aims to develop a Job Plugin which can interact with Bitbucket Serv
 
 Detect the presence of certain types of the report based on a conventional location, and automatically publish them. If the reports are not in a conventional location, users could specify the location using the YML file.
 
+### Overview
+
+This plugin take build.yaml file (which will be stored in root location of repository which has to be built of target branch)
+and converts it to Declarative pipeline code internally and build the repository. Yaml syntax is very similar to Declarative
+pipeline code and examples can be found [here](yamlExamples).
+
 ### How to run this plugin
 
 Till this point of time plugin is tested with GitHub plugin, ans it needs to be installed on the jenkins instance.

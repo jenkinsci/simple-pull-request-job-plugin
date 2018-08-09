@@ -1,5 +1,7 @@
 package io.jenkins.plugins.sprp.models;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import javax.annotation.Nonnull;
 import java.util.HashMap;
 
@@ -13,6 +15,7 @@ public class Step {
         stepName = "";
     }
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     public String getStepName() {
         return stepName;

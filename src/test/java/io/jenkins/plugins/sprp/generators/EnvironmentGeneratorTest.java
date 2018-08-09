@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Credential;
 import io.jenkins.plugins.sprp.models.Environment;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 
 @For(EnvironmentGenerator.class)
 public class EnvironmentGeneratorTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 

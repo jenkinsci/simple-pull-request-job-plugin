@@ -1,10 +1,11 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Step;
-import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.casc.Configurator;
 import org.jenkinsci.plugins.casc.ConfiguratorException;
@@ -25,9 +26,10 @@ import java.util.Map;
 @Symbol("step")
 public class StepGenerator extends PipelineGenerator<Step> {
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
-    public List<String> toPipeline(Step step) throws IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException, NoSuchMethodException, InvocationTargetException {
+    public List<String> toPipeline(Step step) throws ConversionException {
         ArrayList<String> pipelineStep = new ArrayList<>();
         pipelineStep.add(stepConfigurator(step));
         return pipelineStep;
@@ -38,9 +40,7 @@ public class StepGenerator extends PipelineGenerator<Step> {
         return object instanceof Step;
     }
 
-    private String stepConfigurator(Step step)
-            throws IllegalAccessException, InvocationTargetException,
-            InstantiationException, ConfiguratorException, NotSupportedException, NoSuchMethodException {
+    private String stepConfigurator(Step step) throws ConversionException {
         if (step == null)
             return "\n";
 
@@ -49,7 +49,7 @@ public class StepGenerator extends PipelineGenerator<Step> {
         Descriptor<org.jenkinsci.plugins.workflow.steps.Step> stepDescriptor = StepDescriptor.byFunctionName(step.getStepName());
 
         if (stepDescriptor == null) {
-            throw new RuntimeException(new IllegalStateException("No step exist with the name of " + step.getStepName()));
+            throw new ConversionException("No step exist with the name " + step.getStepName());
         }
 
         Class clazz = stepDescriptor.clazz;
@@ -58,9 +58,20 @@ public class StepGenerator extends PipelineGenerator<Step> {
             Constructor constructor = Configurator.getDataBoundConstructor(clazz);
 
             if (constructor != null && constructor.getParameterCount() == 1) {
-                stepObject = constructor.newInstance(step.getDefaultParameter());
+                try {
+                    stepObject = constructor.newInstance(step.getDefaultParameter());
+                } catch (InvocationTargetException e) {
+                    throw new ConversionException("Error while invoking constructor " + constructor.getName() +
+                            " with parameter type " + constructor.getParameters()[0].getType(), e);
+                } catch (InstantiationException e) {
+                    throw new ConversionException("Error while instantiating" + step.getStepName() +
+                            " step object with constructor  " + constructor.getName(), e);
+                } catch (IllegalAccessException e) {
+                    throw new ConversionException("Unknown error while instantiating an object of step " +
+                            step.getStepName() + " with default parameter");
+                }
             } else {
-                throw new NoSuchMethodException("No suitable constructor found for default parameter of step "
+                throw new ConversionException("No suitable constructor found for default parameter of step "
                         + step.getStepName());
             }
         } else {
@@ -69,9 +80,13 @@ public class StepGenerator extends PipelineGenerator<Step> {
             Configurator configurator = Configurator.lookup(clazz);
 
             if (configurator != null) {
-                stepObject = configurator.configure(mapping);
+                try {
+                    stepObject = configurator.configure(mapping);
+                } catch (ConfiguratorException e) {
+                    throw new ConversionException("JCasC plugin is not able to configure the step + " + step.getStepName(), e);
+                }
             } else {
-                throw new IllegalStateException("No step with name '" + step.getStepName() +
+                throw new ConversionException("No step with name '" + step.getStepName() +
                         "' exist. Have you installed required plugin.");
             }
         }
@@ -80,7 +95,7 @@ public class StepGenerator extends PipelineGenerator<Step> {
         return snippet;
     }
 
-    private Mapping doMappingForMap(Map<String, Object> map) throws NotSupportedException {
+    private Mapping doMappingForMap(Map<String, Object> map) throws ConversionException {
         Mapping mapping = new Mapping();
 
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -96,7 +111,7 @@ public class StepGenerator extends PipelineGenerator<Step> {
         return mapping;
     }
 
-    private Scalar doMappingForScalar(Object object) throws NotSupportedException {
+    private Scalar doMappingForScalar(Object object) throws ConversionException {
         Scalar scalar;
 
         if (object instanceof String) {
@@ -108,13 +123,13 @@ public class StepGenerator extends PipelineGenerator<Step> {
         } else if (object instanceof Boolean) {
             scalar = new Scalar((Boolean) object);
         } else {
-            throw new NotSupportedException(object.getClass() + " is not supported.");
+            throw new ConversionException(object.getClass() + " is not supported.");
         }
 
         return scalar;
     }
 
-    private Sequence doMappingForSequence(List<Object> objects) throws NotSupportedException {
+    private Sequence doMappingForSequence(List<Object> objects) throws ConversionException {
         Sequence sequence = new Sequence();
 
         for (Object object : objects) {

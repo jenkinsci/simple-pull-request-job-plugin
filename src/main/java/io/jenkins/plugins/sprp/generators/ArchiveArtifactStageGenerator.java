@@ -1,22 +1,21 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.PipelineGenerator;
-import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 @Extension
 @Symbol("archiveArtifactStage")
 public class ArchiveArtifactStageGenerator extends PipelineGenerator<ArrayList<String>> {
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
-    public List<String> toPipeline(ArrayList<String> paths) throws IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException, NoSuchMethodException, InvocationTargetException {
+    public List<String> toPipeline(ArrayList<String> paths) {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         if (paths == null) {

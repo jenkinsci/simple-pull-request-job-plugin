@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Credential;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Symbol("environment")
 public class EnvironmentGenerator extends PipelineGenerator<Environment> {
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
     public List<String> toPipeline(Environment environment) {

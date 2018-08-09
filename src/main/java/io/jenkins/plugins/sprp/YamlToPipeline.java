@@ -13,25 +13,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class YamlToPipeline {
-
     public String generatePipeline(@Nonnull InputStream yamlScriptInputStream,
-                                   @CheckForNull GitConfig gitConfig,
-                                   @Nonnull TaskListener listener)
-            throws ConversionException {
-        try {
-            return _generatePipeline(yamlScriptInputStream, gitConfig, listener);
-        } catch (ConversionException ex) {
-            throw  ex;
-        } catch (Exception ex) {
-            throw new ConversionException("Unhandled exception", ex);
-        }
-    }
-
-    //TODO: Remove once custom exceptions are cleaned up
-    private String _generatePipeline(@Nonnull InputStream yamlScriptInputStream,
                                      @CheckForNull GitConfig gitConfig,
                                      @Nonnull TaskListener listener)
-            throws Exception {
+            throws ConversionException {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);

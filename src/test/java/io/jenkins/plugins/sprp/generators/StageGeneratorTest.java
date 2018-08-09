@@ -1,10 +1,9 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Stage;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,13 +11,13 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.yaml.snakeyaml.Yaml;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
 @For(StepGenerator.class)
 public class StageGeneratorTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
@@ -30,7 +29,7 @@ public class StageGeneratorTest {
     }
 
     @Test
-    public void stage() throws IllegalAccessException, InvocationTargetException, ConfiguratorException, InstantiationException, NoSuchMethodException, NotSupportedException, ConversionException {
+    public void stage() throws ConversionException {
         String stageYaml =
                 "name: satge1\n" +
                 "agent: any\n" +

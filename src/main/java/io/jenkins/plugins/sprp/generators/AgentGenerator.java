@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Symbol("agent")
 public class AgentGenerator extends PipelineGenerator<Agent> {
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
     public List<String> toPipeline(Agent agent) {

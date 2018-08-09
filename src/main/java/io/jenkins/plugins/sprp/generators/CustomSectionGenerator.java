@@ -5,13 +5,10 @@ import hudson.Extension;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.CustomPipelineSection;
-import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,11 +20,11 @@ import java.util.List;
 @Symbol("custom")
 public class CustomSectionGenerator extends PipelineGenerator<CustomPipelineSection> {
 
-    @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
+    @SuppressFBWarnings({"NP_NONNULL_RETURN_VIOLATION", "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"})
     @Nonnull
     @Override
     public List<String> toPipeline(@CheckForNull CustomPipelineSection section)
-            throws ConversionException, IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException, NoSuchMethodException, InvocationTargetException {
+            throws ConversionException {
         if (section == null) {
             return Collections.emptyList();
         }

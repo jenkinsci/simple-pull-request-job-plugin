@@ -1,24 +1,23 @@
 package io.jenkins.plugins.sprp;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.jenkinsci.plugins.structs.SymbolLookup;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
 public abstract class PipelineGenerator<T> implements ExtensionPoint {
     static private Logger logger = Logger.getLogger(PipelineGenerator.class.getClass().getName());
 
     @Nonnull
-    public abstract List<String> toPipeline(@CheckForNull T object) throws ConversionException, IllegalAccessException, InvocationTargetException, ConfiguratorException, InstantiationException, NoSuchMethodException, NotSupportedException;
+    public abstract List<String> toPipeline(@CheckForNull T object) throws ConversionException;
 
     public abstract boolean canConvert(@Nonnull Object object);
 
@@ -41,6 +40,7 @@ public abstract class PipelineGenerator<T> implements ExtensionPoint {
         return null;
     }
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     public static <T extends PipelineGenerator> T lookupConverterOrFail(Class<T> clazz)
             throws ConversionException {
@@ -62,7 +62,7 @@ public abstract class PipelineGenerator<T> implements ExtensionPoint {
     }
 
     @Nonnull
-    public static List<String> convert(@Nonnull Object object) throws ConversionException, IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException, NoSuchMethodException, InvocationTargetException {
+    public static List<String> convert(@Nonnull Object object) throws ConversionException {
         PipelineGenerator gen = lookup(object);
         if (gen == null) {
             // TODO: add better diagnostics (field matching)
@@ -73,7 +73,7 @@ public abstract class PipelineGenerator<T> implements ExtensionPoint {
     }
 
     @Nonnull
-    public static List<String> convert(@Nonnull String converterName, @CheckForNull Object object) throws ConversionException, IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException, NoSuchMethodException, InvocationTargetException {
+    public static List<String> convert(@Nonnull String converterName, @CheckForNull Object object) throws ConversionException {
         PipelineGenerator gen = lookupForName(converterName);
         if (gen == null) {
             // TODO: add better diagnostics (field matching)

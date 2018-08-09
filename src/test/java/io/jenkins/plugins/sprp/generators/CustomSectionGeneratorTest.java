@@ -1,5 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.YamlToPipeline;
@@ -21,7 +22,6 @@ import java.util.List;
 
 /**
  * @author Oleg Nenashev
- * @since TODO
  */
 @For(CustomSectionGenerator.class)
 public class CustomSectionGeneratorTest {
@@ -56,6 +56,7 @@ public class CustomSectionGeneratorTest {
     @Symbol("foo")
     public static class FooGenerator extends PipelineGenerator {
 
+        @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
         @Nonnull
         @Override
         public List<String> toPipeline(@CheckForNull Object object) throws ConversionException {

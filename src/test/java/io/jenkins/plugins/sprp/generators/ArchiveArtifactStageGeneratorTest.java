@@ -1,21 +1,20 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.jenkins.plugins.sprp.PipelineGenerator;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
 @For(ArchiveArtifactStageGenerator.class)
 public class ArchiveArtifactStageGeneratorTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
@@ -27,7 +26,7 @@ public class ArchiveArtifactStageGeneratorTest {
     }
 
     @Test
-    public void echo() throws IllegalAccessException, InvocationTargetException, ConfiguratorException, InstantiationException, NoSuchMethodException, NotSupportedException {
+    public void echo() {
         ArrayList<String> archiveArtifacts = new ArrayList<>();
 
         archiveArtifacts.add("path-to-archive-1");

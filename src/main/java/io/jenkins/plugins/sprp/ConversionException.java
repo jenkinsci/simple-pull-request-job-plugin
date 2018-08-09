@@ -1,8 +1,6 @@
 package io.jenkins.plugins.sprp;
 
-import java.io.IOException;
-
-public class ConversionException extends IOException {
+public class ConversionException extends Exception {
 
     public ConversionException(String message) {
         super(message);

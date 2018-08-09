@@ -1,16 +1,14 @@
 package io.jenkins.plugins.sprp.generators;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Post;
 import io.jenkins.plugins.sprp.models.Step;
-import org.eclipse.jgit.errors.NotSupportedException;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,9 +18,10 @@ import java.util.Map;
 @Symbol("post")
 public class PostGenerator extends PipelineGenerator<Post> {
 
+    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
-    public List<String> toPipeline(Post postSection) throws IllegalAccessException, InvocationTargetException, ConfiguratorException, InstantiationException, NoSuchMethodException, NotSupportedException, ConversionException {
+    public List<String> toPipeline(Post postSection) throws ConversionException {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         if (postSection == null) {
@@ -52,8 +51,7 @@ public class PostGenerator extends PipelineGenerator<Post> {
     }
 
     private List<String> getPostConditionSnippetIfNonNull(String postCondition, ArrayList<LinkedHashMap<String, Step>> steps)
-            throws IllegalAccessException, ConfiguratorException, InstantiationException, NotSupportedException,
-            NoSuchMethodException, InvocationTargetException, ConversionException {
+            throws ConversionException {
         ArrayList<String> snippetLines = new ArrayList<>();
         if (steps != null) {
             snippetLines.add(postCondition + " {");
