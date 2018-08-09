@@ -1,6 +1,5 @@
 package io.jenkins.plugins.sprp.generators;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
@@ -20,7 +19,6 @@ import java.util.List;
 @Symbol("custom")
 public class CustomSectionGenerator extends PipelineGenerator<CustomPipelineSection> {
 
-    @SuppressFBWarnings({"NP_NONNULL_RETURN_VIOLATION", "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"})
     @Nonnull
     @Override
     public List<String> toPipeline(@CheckForNull CustomPipelineSection section)

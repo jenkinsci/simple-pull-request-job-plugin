@@ -1,6 +1,5 @@
 package io.jenkins.plugins.sprp.generators;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import io.jenkins.plugins.sprp.ConversionException;
@@ -26,7 +25,6 @@ import java.util.Map;
 @Symbol("step")
 public class StepGenerator extends PipelineGenerator<Step> {
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
     public List<String> toPipeline(Step step) throws ConversionException {

@@ -4,7 +4,6 @@ import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -49,11 +48,8 @@ public class GitPushStep extends Step {
 
     public static class Execution extends SynchronousStepExecution<Void> {
         private static final long serialVersionUID = 1L;
-        @SuppressFBWarnings(
-                value = {"SE_TRANSIENT_FIELD_NOT_RESTORED"},
-                justification = "Only used when starting."
-        )
-        private final transient String credentialId;
+
+        private final String credentialId;
         private final String url;
         private final String branch;
 

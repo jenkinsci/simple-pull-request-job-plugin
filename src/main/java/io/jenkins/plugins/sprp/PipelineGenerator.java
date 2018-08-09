@@ -1,6 +1,5 @@
 package io.jenkins.plugins.sprp;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import org.apache.commons.lang.StringUtils;
@@ -12,7 +11,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
+
 public abstract class PipelineGenerator<T> implements ExtensionPoint {
     static private Logger logger = Logger.getLogger(PipelineGenerator.class.getClass().getName());
 
@@ -40,7 +39,6 @@ public abstract class PipelineGenerator<T> implements ExtensionPoint {
         return null;
     }
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     public static <T extends PipelineGenerator> T lookupConverterOrFail(Class<T> clazz)
             throws ConversionException {

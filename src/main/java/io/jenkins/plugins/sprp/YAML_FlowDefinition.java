@@ -24,7 +24,6 @@
 
 package io.jenkins.plugins.sprp;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.ItemGroup;
@@ -134,7 +133,6 @@ public class YAML_FlowDefinition extends FlowDefinition {
     @Extension
     public static class DescriptorImpl extends FlowDefinitionDescriptor {
 
-        @SuppressFBWarnings("NP_NONNULL_RETURN_VIOLATION")
         @Nonnull
         @Override
         public String getDisplayName() {

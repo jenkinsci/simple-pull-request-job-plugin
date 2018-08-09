@@ -1,6 +1,5 @@
 package io.jenkins.plugins.sprp.generators;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
@@ -16,16 +15,20 @@ import java.util.List;
 @Symbol("publishReportsAndArtifactsStage")
 public class PublishReportsAndArtifactsStageGenerator extends PipelineGenerator<ReportsAndArtifactsInfo> {
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     @Nonnull
     @Override
     public List<String> toPipeline(ReportsAndArtifactsInfo reportsAndArtifactsInfo) {
+        ArrayList<String> snippetLines = new ArrayList<>();
+
+        if(reportsAndArtifactsInfo == null){
+            return snippetLines;
+        }
 
         ArrayList<String> reports = reportsAndArtifactsInfo.getReports();
         ArtifactPublishingConfig config = reportsAndArtifactsInfo.getArtifactPublishingConfig();
         ArrayList<HashMap<String, String>> publishArtifacts = reportsAndArtifactsInfo.getPublishArtifacts();
 
-        ArrayList<String> snippetLines = new ArrayList<>();
+
 
         if (reports == null && config == null) {
             return snippetLines;
