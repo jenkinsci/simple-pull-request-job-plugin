@@ -5,9 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-
 import static org.junit.Assert.assertEquals;
 
 public class YamlToPipelineTest {
@@ -15,7 +12,7 @@ public class YamlToPipelineTest {
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Test
-    public void yamlToPipelineTest() throws NoSuchMethodException, IOException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchFieldException {
+    public void yamlToPipelineTest() throws ConversionException {
         String yaml = "agent: any\n" +
                 "\n" +
                 "stages:\n" +

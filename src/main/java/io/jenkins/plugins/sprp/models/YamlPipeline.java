@@ -1,8 +1,8 @@
 package io.jenkins.plugins.sprp.models;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import java.util.*;
 
 public class YamlPipeline {
     private Agent agent;
@@ -17,8 +17,10 @@ public class YamlPipeline {
     private Environment environment;
     private Post post;
     private ArrayList<LinkedHashMap<String, Step>> steps;
+    @CheckForNull
+    private ArrayList<CustomPipelineSection> sections;
 
-    YamlPipeline() {
+    public YamlPipeline() {
     }
 
     public Agent getAgent() {
@@ -115,5 +117,14 @@ public class YamlPipeline {
 
     public void setSteps(ArrayList<LinkedHashMap<String, Object>> steps) {
         this.steps = Stage.generateSteps(steps);
+    }
+
+    public void setSections(@CheckForNull ArrayList<CustomPipelineSection> sections) {
+        this.sections = sections;
+    }
+
+    @Nonnull
+    public List<CustomPipelineSection> getSections() {
+        return sections != null ? sections : Collections.<CustomPipelineSection>emptyList();
     }
 }

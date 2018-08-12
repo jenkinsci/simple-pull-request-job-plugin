@@ -1,21 +1,47 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.generators;
 
-import hudson.Launcher;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Agent;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
+@For(AgentGenerator.class)
 public class AgentTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
 
-    private final Launcher launcher = (Launcher) jenkinsRule.createLocalLauncher();
-    private PipelineSnippetGenerator pipelineSnippetGenerator = new PipelineSnippetGenerator(launcher);
+    private AgentGenerator generator;
+
+    @Before
+    public void setupGenerator() {
+        generator = PipelineGenerator.lookupConverter(AgentGenerator.class);
+    }
+    @Test
+    public void nodeGenerationLabelOnlyTest() {
+        Agent agent = new Agent();
+        agent.setLabel("my-label");
+
+        String agentSnippetActual =
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
+
+        String agentSnippetExpected =
+                "agent {\n" +
+                        "\tnode {\n" +
+                        "\t\tlabel 'my-label'\n" +
+                        "\t}\n" +
+                        "}\n";
+
+        assertEquals(agentSnippetExpected, agentSnippetActual);
+    }
 
     @Test
     public void nodeGenerationTest() {
@@ -24,7 +50,7 @@ public class AgentTest {
         agent.setCustomWorkspace("my-customWorkspace");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -44,7 +70,7 @@ public class AgentTest {
         agent.setArgs("-v temp:temp");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -68,7 +94,7 @@ public class AgentTest {
         agent.setReuseNode(true);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -92,7 +118,7 @@ public class AgentTest {
         agent.setReuseNode(false);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -107,7 +133,6 @@ public class AgentTest {
         assertEquals(agentSnippetExpected, agentSnippetActual);
     }
 
-
     @Test
     public void dockerfileGenerationTest() {
         Agent agent = new Agent();
@@ -115,7 +140,7 @@ public class AgentTest {
         agent.setArgs("-v temp:temp");
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -140,7 +165,7 @@ public class AgentTest {
         agent.setReuseNode(true);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +
@@ -168,7 +193,7 @@ public class AgentTest {
         agent.setReuseNode(false);
 
         String agentSnippetActual =
-                pipelineSnippetGenerator.autoAddTabs((ArrayList<String>) pipelineSnippetGenerator.getAgent(agent));
+                PipelineGenerator.autoAddTabs((ArrayList<String>) generator.toPipeline(agent));
 
         String agentSnippetExpected =
                 "agent {\n" +

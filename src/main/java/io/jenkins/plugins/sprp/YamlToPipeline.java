@@ -1,36 +1,33 @@
 package io.jenkins.plugins.sprp;
 
 import hudson.model.TaskListener;
-import io.jenkins.plugins.sprp.models.Stage;
-import io.jenkins.plugins.sprp.models.YamlPipeline;
-import jenkins.model.Jenkins;
-import org.eclipse.jgit.errors.NotSupportedException;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
+import io.jenkins.plugins.sprp.models.*;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class YamlToPipeline {
-    public String generatePipeline(InputStream yamlScriptInputStream, GitConfig gitConfig, TaskListener listener)
-            throws InvocationTargetException, InstantiationException, ConfiguratorException,
-            IllegalAccessException, NotSupportedException, NoSuchMethodException {
+    public String generatePipeline(@Nonnull InputStream yamlScriptInputStream,
+                                     @CheckForNull GitConfig gitConfig,
+                                     @Nonnull TaskListener listener)
+            throws ConversionException {
         ArrayList<String> scriptLines = new ArrayList<>();
 
         YamlPipeline yamlPipeline = loadYaml(yamlScriptInputStream, listener);
 
-        // Passing a dummy launcher to detect if the machine is Unix or not
-        PipelineSnippetGenerator psg = new PipelineSnippetGenerator(Jenkins.get().createLauncher(listener));
-
         scriptLines.add("pipeline {");
 
         // Adding outer agent and tools section
-        scriptLines.addAll(psg.getAgent(yamlPipeline.getAgent()));
+        scriptLines.addAll(PipelineGenerator.convert("agent", yamlPipeline.getAgent()));
 
         // Adding environment
-        scriptLines.addAll(psg.getEnvironment(yamlPipeline.getEnvironment()));
+        scriptLines.addAll(PipelineGenerator.convert("environment", yamlPipeline.getEnvironment()));
 
         // Stages begin
         scriptLines.add("stages {");
@@ -39,7 +36,11 @@ public class YamlToPipeline {
             scriptLines.add("stage('Build') {");
             scriptLines.add("steps {");
 
-            scriptLines.addAll(psg.getSteps(yamlPipeline.getSteps()));
+            for (LinkedHashMap<String, Step> step : yamlPipeline.getSteps()) {
+                for (Map.Entry<String, Step> entry : step.entrySet()) {
+                    scriptLines.addAll(PipelineGenerator.convert("step", entry.getValue()));
+                }
+            }
 
             scriptLines.add("}");
             scriptLines.add("}");
@@ -47,29 +48,39 @@ public class YamlToPipeline {
 
         if (yamlPipeline.getStages() != null) {
             for (Stage stage : yamlPipeline.getStages()) {
-                scriptLines.addAll(psg.getStage(stage));
+                scriptLines.addAll(PipelineGenerator.convert("stage", stage));
             }
         }
 
         // Archive artifacts stage
-        scriptLines.addAll(psg.getArchiveArtifactsStage(yamlPipeline.getArchiveArtifacts()));
+        scriptLines.addAll(PipelineGenerator.convert("archiveArtifactStage", yamlPipeline.getArchiveArtifacts()));
 
-        scriptLines.addAll(psg.getPublishReportsAndArtifactStage(yamlPipeline.getReports(),
-                yamlPipeline.getArtifactPublishingConfig(), yamlPipeline.getPublishArtifacts()));
+        ReportsAndArtifactsInfo reportsAndArtifactsInfo = new ReportsAndArtifactsInfo();
+        reportsAndArtifactsInfo.setArtifactPublishingConfig(yamlPipeline.getArtifactPublishingConfig());
+        reportsAndArtifactsInfo.setReports(yamlPipeline.getReports());
+        reportsAndArtifactsInfo.setPublishArtifacts(yamlPipeline.getPublishArtifacts());
+
+        scriptLines.addAll(PipelineGenerator.convert("publishReportsAndArtifactsStage", reportsAndArtifactsInfo));
 
         // This stage will always be generated at last, because if anyone of the above stage fails then we
         // will not push the code to target branch
         if (yamlPipeline.getConfiguration() != null && yamlPipeline.getConfiguration().isPushPrOnSuccess()) {
-            scriptLines.addAll(psg.gitPushStage(gitConfig));
+            if (gitConfig == null) {
+                throw new ConversionException("Git Configuration is not defined, but it is required for the Git Push");
+            }
+            scriptLines.addAll(PipelineGenerator.convert("gitPushStage", gitConfig));
         }
 
         scriptLines.add("}");
 
-        scriptLines.addAll(psg.getPostSection(yamlPipeline.getPost()));
+        scriptLines.addAll(PipelineGenerator.convert("post", yamlPipeline.getPost()));
+
+        for (CustomPipelineSection section : yamlPipeline.getSections()) {
+            scriptLines.addAll(PipelineGenerator.convert(section));
+        }
 
         scriptLines.add("}");
-
-        return psg.autoAddTabs(scriptLines);
+        return PipelineGenerator.autoAddTabs(scriptLines);
     }
 
     public YamlPipeline loadYaml(InputStream yamlScriptInputStream, TaskListener listener) {
