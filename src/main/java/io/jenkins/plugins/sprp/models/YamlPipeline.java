@@ -1,24 +1,15 @@
 package io.jenkins.plugins.sprp.models;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.*;
 
 public class YamlPipeline {
     private Agent agent;
-    private Configuration configuration;
     private ArrayList<Stage> stages;
-    private String gitCredentialId;
-    private ArtifactPublishingConfig artifactPublishingConfig;
-    private ArrayList<String> archiveArtifacts;
-    private ArrayList<String> reports;
-    private ArrayList<HashMap<String, String>> publishArtifacts;
-    private String findBugs;
-    private Environment environment;
     private Post post;
     private ArrayList<LinkedHashMap<String, Step>> steps;
-    @CheckForNull
-    private ArrayList<CustomPipelineSection> sections;
+    private Configuration configuration;
+    private Environment environment;
 
     public YamlPipeline() {
     }
@@ -40,35 +31,19 @@ public class YamlPipeline {
     }
 
     public String getGitCredentialId() {
-        return gitCredentialId;
-    }
-
-    public void setGitCredentialId(String gitCredentialId) {
-        this.gitCredentialId = gitCredentialId;
+        return configuration.getGitCredentialId();
     }
 
     public ArtifactPublishingConfig getArtifactPublishingConfig() {
-        return artifactPublishingConfig;
-    }
-
-    public void setArtifactPublishingConfig(ArtifactPublishingConfig artifactPublishingConfig) {
-        this.artifactPublishingConfig = artifactPublishingConfig;
+        return configuration.getArtifactPublishingConfig();
     }
 
     public ArrayList<HashMap<String, String>> getPublishArtifacts() {
-        return publishArtifacts;
-    }
-
-    public void setPublishArtifacts(ArrayList<HashMap<String, String>> publishArtifacts) {
-        this.publishArtifacts = publishArtifacts;
+        return configuration.getPublishArtifacts();
     }
 
     public ArrayList<String> getArchiveArtifacts() {
-        return archiveArtifacts;
-    }
-
-    public void setArchiveArtifacts(ArrayList<String> archiveArtifacts) {
-        this.archiveArtifacts = archiveArtifacts;
+        return configuration.getArchiveArtifacts();
     }
 
     public ArrayList<Stage> getStages() {
@@ -80,19 +55,11 @@ public class YamlPipeline {
     }
 
     public ArrayList<String> getReports() {
-        return reports;
-    }
-
-    public void setReports(ArrayList<String> reports) {
-        this.reports = reports;
+        return configuration.getReports();
     }
 
     public String getFindBugs() {
-        return findBugs;
-    }
-
-    public void setFindBugs(String findBugs) {
-        this.findBugs = findBugs;
+        return configuration.getFindBugs();
     }
 
     public Environment getEnvironment() {
@@ -119,12 +86,8 @@ public class YamlPipeline {
         this.steps = Stage.generateSteps(steps);
     }
 
-    public void setSections(@CheckForNull ArrayList<CustomPipelineSection> sections) {
-        this.sections = sections;
-    }
-
     @Nonnull
     public List<CustomPipelineSection> getSections() {
-        return sections != null ? sections : Collections.<CustomPipelineSection>emptyList();
+        return configuration != null ? configuration.getSections() : Collections.<CustomPipelineSection>emptyList();
     }
 }

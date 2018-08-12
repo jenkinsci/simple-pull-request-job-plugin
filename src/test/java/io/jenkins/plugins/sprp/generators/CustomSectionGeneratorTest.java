@@ -39,7 +39,8 @@ public class CustomSectionGeneratorTest {
                 "    steps:\n" +
                 "      - sh: \"scripts/hello.sh\"\n" +
                 "\n" +
-                "sections:\n" +
+                "configuration:\n" +
+                "  sections:\n" +
                 "    - name: foo\n" +
                 "      data:\n" +
                 "        field1: hello\n" +

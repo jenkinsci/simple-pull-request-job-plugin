@@ -29,9 +29,9 @@ public class FullPipelineGenerationTest {
                 "    - username2\n" +
                 "    - username3\n" +
                 "\n" +
-                "reports:\n" +
-                "  - location_of_report_1\n" +
-                "  - location_of_report_2\n" +
+                "  reports:\n" +
+                "    - location_of_report_1\n" +
+                "    - location_of_report_2\n" +
                 "\n" +
                 "environment:\n" +
                 "  variables:\n" +
