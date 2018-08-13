@@ -2,15 +2,18 @@ package io.jenkins.plugins.sprp.generators;
 
 import hudson.Extension;
 import hudson.model.Descriptor;
+import io.jenkins.plugins.casc.ConfigurationContext;
+import io.jenkins.plugins.casc.Configurator;
+import io.jenkins.plugins.casc.ConfiguratorException;
+import io.jenkins.plugins.casc.ConfiguratorRegistry;
+import io.jenkins.plugins.casc.impl.configurators.DataBoundConfigurator;
+import io.jenkins.plugins.casc.model.Mapping;
+import io.jenkins.plugins.casc.model.Scalar;
+import io.jenkins.plugins.casc.model.Sequence;
 import io.jenkins.plugins.sprp.ConversionException;
 import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Step;
 import org.jenkinsci.Symbol;
-import org.jenkinsci.plugins.casc.Configurator;
-import org.jenkinsci.plugins.casc.ConfiguratorException;
-import org.jenkinsci.plugins.casc.model.Mapping;
-import org.jenkinsci.plugins.casc.model.Scalar;
-import org.jenkinsci.plugins.casc.model.Sequence;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
@@ -53,7 +56,8 @@ public class StepGenerator extends PipelineGenerator<Step> {
         Class clazz = stepDescriptor.clazz;
 
         if (step.getDefaultParameter() != null) {
-            Constructor constructor = Configurator.getDataBoundConstructor(clazz);
+
+            Constructor constructor = DataBoundConfigurator.getDataBoundConstructor(clazz);
 
             if (constructor != null && constructor.getParameterCount() == 1) {
                 try {
@@ -75,11 +79,12 @@ public class StepGenerator extends PipelineGenerator<Step> {
         } else {
             Mapping mapping = doMappingForMap(step.getParameters());
 
-            Configurator configurator = Configurator.lookup(clazz);
+            ConfigurationContext context = new ConfigurationContext(ConfiguratorRegistry.get());
+            Configurator configurator = ConfiguratorRegistry.get().lookup(clazz);
 
             if (configurator != null) {
                 try {
-                    stepObject = configurator.configure(mapping);
+                    stepObject = configurator.configure(mapping, context);
                 } catch (ConfiguratorException e) {
                     throw new ConversionException("JCasC plugin is not able to configure the step + " + step.getStepName(), e);
                 }
