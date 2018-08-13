@@ -7,7 +7,7 @@ import org.jenkinsci.Symbol;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,7 +99,7 @@ public class AgentGenerator extends PipelineGenerator<Agent> {
         return snippetLines;
     }
 
-    private List<String> getTools(HashMap<String, String> tools) {
+    private List<String> getTools(LinkedHashMap<String, String> tools) {
         ArrayList<String> snippetLines = new ArrayList<>();
 
         if (tools == null) {

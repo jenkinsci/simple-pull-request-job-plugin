@@ -2,7 +2,7 @@ package io.jenkins.plugins.sprp.models;
 
 import org.eclipse.jgit.errors.NotSupportedException;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class Agent {
     private String label;
@@ -15,7 +15,9 @@ public class Agent {
     private boolean reuseNode;
     private String anyOrNone;
     private boolean none;
-    private HashMap<String, String> tools;
+
+    // LinkedHashMap is used to preserve the order of insertion in tools as some tests may fail
+    private LinkedHashMap<String, String> tools;
 
     public Agent(){}
 
@@ -99,7 +101,7 @@ public class Agent {
         this.anyOrNone = anyOrNone;
     }
 
-    public HashMap<String, String> getTools() {
+    public LinkedHashMap<String, String> getTools() {
         return tools;
     }
 
@@ -111,7 +113,7 @@ public class Agent {
         this.none = none;
     }
     
-    public void setTools(HashMap<String, String> tools) {
+    public void setTools(LinkedHashMap<String, String> tools) {
         this.tools = tools;
     }
 }
