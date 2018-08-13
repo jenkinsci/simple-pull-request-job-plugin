@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class Configuration {
     private boolean pushPrOnSuccess;
@@ -69,8 +70,8 @@ public class Configuration {
     }
 
     @Nonnull
-    public ArrayList<CustomPipelineSection> getSections() {
-        return this.sections != null ? this.sections : (ArrayList<CustomPipelineSection>) Collections.<CustomPipelineSection>emptyList();
+    public List<CustomPipelineSection> getSections() {
+        return this.sections != null ? this.sections : Collections.<CustomPipelineSection>emptyList();
     }
 
     public void setSections(@CheckForNull ArrayList<CustomPipelineSection> sections) {
