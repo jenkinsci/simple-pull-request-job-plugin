@@ -20,10 +20,10 @@ configuration:
     - username2
     - username3
 
-# Study about the reports type. Urgent
-reports:
-  - location_of_report_1
-  - location_of_report_2
+  # Study about the reports type. Urgent
+  reports:
+    - location_of_report_1
+    - location_of_report_2
 
 environment:
   variables:

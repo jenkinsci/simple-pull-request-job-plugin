@@ -23,9 +23,10 @@ public class YamlToPipelineTest {
                 "      - sh:\n" +
                 "          script: \"scripts/hello.sh\"" +
                 "\n" +
-                "archiveArtifacts:\n" +
-                "    - Jenkinsfile.yaml\n" +
-                "    - scripts/hello.sh\n" +
+                "configuration:\n" +
+                "  archiveArtifacts:\n" +
+                "      - Jenkinsfile.yaml\n" +
+                "      - scripts/hello.sh\n" +
                 "\n";
 
         String pipelineScriptLinuxExpected = "pipeline {\n" +
