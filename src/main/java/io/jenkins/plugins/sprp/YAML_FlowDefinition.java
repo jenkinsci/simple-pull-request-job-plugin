@@ -61,7 +61,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
 
     public Object readResolve() {
         if (this.scriptPath == null) {
-            this.scriptPath = "Jenkinsfile.yaml";
+            this.scriptPath = YAML_BranchProjectFactory.SCRIPT;
         }
         return this;
     }
@@ -117,7 +117,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
         try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
             if (fs != null) {
                 InputStream yamlInputStream = fs.child(scriptPath).content();
-                listener.getLogger().println("Path of Jenkinsfile.yaml" + fs.child(scriptPath).getPath());
+                listener.getLogger().println("Path of " + YAML_BranchProjectFactory.SCRIPT + fs.child(scriptPath).getPath());
                 YamlToPipeline y = new YamlToPipeline();
                 script = y.generatePipeline(yamlInputStream, this.gitConfig, listener);
             } else {
