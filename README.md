@@ -4,8 +4,6 @@
 
 This project aims to develop a Job Plugin which can interact with Bitbucket Server, Bitbucket Cloud, and Github whenever a pull request is created or updated. Users should be able to configure job type using YAML file which will be placed in root directory of the Git repository being the subject of the PR.
 
-Detect the presence of certain types of the report based on a conventional location, and automatically publish them. If the reports are not in a conventional location, users could specify the location using the YML file.
-
 ### Overview
 
 This plugin take build.yaml file (which will be stored in root location of repository which has to be built of target branch)
@@ -121,3 +119,8 @@ push the changes to target branch.
 
 Only xml reports are supported at this point in time.
 
+### Future tasks
+
+1. Support the “when” Declarative Pipeline directive
+2. Detect the presence of certain types of the report based on a conventional location, and automatically publish them. If the reports are not in a conventional location, users could specify the location using the YML file.
+3. Support build from webhook of diffrent platforms (like GitHub, Bitbucket, etc).
