@@ -1,7 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
 import hudson.Extension;
-import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.ReportsAndArtifactsInfo;
 import org.jenkinsci.Symbol;

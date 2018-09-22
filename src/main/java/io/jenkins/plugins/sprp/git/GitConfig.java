@@ -1,4 +1,4 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.git;
 
 public class GitConfig {
     private String gitUrl;

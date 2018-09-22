@@ -1,5 +1,7 @@
 package io.jenkins.plugins.sprp;
 
+import io.jenkins.plugins.sprp.exception.ConversionException;
+import io.jenkins.plugins.sprp.git.GitConfig;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Rule;
 import org.junit.Test;

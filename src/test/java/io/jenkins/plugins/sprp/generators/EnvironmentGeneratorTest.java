@@ -1,7 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.jenkins.plugins.sprp.PipelineGenerator;
 import io.jenkins.plugins.sprp.models.Credential;
 import io.jenkins.plugins.sprp.models.Environment;
 import org.junit.Before;

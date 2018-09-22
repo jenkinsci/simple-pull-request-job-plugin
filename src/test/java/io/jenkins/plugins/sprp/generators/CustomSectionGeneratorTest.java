@@ -1,8 +1,7 @@
 package io.jenkins.plugins.sprp.generators;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.jenkins.plugins.sprp.ConversionException;
-import io.jenkins.plugins.sprp.PipelineGenerator;
+import io.jenkins.plugins.sprp.exception.ConversionException;
 import io.jenkins.plugins.sprp.YamlToPipeline;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.hamcrest.CoreMatchers;

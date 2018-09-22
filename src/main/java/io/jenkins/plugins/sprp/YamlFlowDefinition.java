@@ -30,6 +30,7 @@ import hudson.model.ItemGroup;
 import hudson.model.Queue;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
+import io.jenkins.plugins.sprp.git.GitConfig;
 import jenkins.branch.Branch;
 import jenkins.scm.api.SCMFileSystem;
 import jenkins.scm.api.SCMHead;
@@ -51,11 +52,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-public class YAML_FlowDefinition extends FlowDefinition {
+public class YamlFlowDefinition extends FlowDefinition {
     private String scriptPath;
-    private GitConfig gitConfig;
 
-    public YAML_FlowDefinition(String scriptPath) {
+    public YamlFlowDefinition(String scriptPath) {
         this.scriptPath = scriptPath;
     }
 
@@ -91,7 +91,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
             throw new IllegalStateException(branch.getSourceId() + " not found");
         }
 
-        this.gitConfig = new GitConfig();
+        GitConfig gitConfig = new GitConfig();
 
         SCMHead head = branch.getHead();
 
@@ -109,9 +109,9 @@ public class YAML_FlowDefinition extends FlowDefinition {
         SCMRevision rev = scmSource.getTrustedRevision(tip, listener);
         GitSCM gitSCM = (GitSCM) scmSource.build(head, rev);
 
-        this.gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
-        this.gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
-        this.gitConfig.setGitBranch(head.getName());
+        gitConfig.setGitUrl(gitSCM.getUserRemoteConfigs().get(0).getUrl());
+        gitConfig.setCredentialsId(gitSCM.getUserRemoteConfigs().get(0).getCredentialsId());
+        gitConfig.setGitBranch(head.getName());
 
         String script;
         try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
@@ -119,7 +119,7 @@ public class YAML_FlowDefinition extends FlowDefinition {
                 InputStream yamlInputStream = fs.child(scriptPath).content();
                 listener.getLogger().println("Path of Jenkinsfile.yaml" + fs.child(scriptPath).getPath());
                 YamlToPipeline y = new YamlToPipeline();
-                script = y.generatePipeline(yamlInputStream, this.gitConfig, listener);
+                script = y.generatePipeline(yamlInputStream, gitConfig, listener);
             } else {
                 throw new IOException("SCM not supported");
                 // FIXME implement full checkout
