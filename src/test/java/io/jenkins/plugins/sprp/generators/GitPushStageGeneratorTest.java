@@ -1,8 +1,7 @@
 package io.jenkins.plugins.sprp.generators;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.jenkins.plugins.sprp.GitConfig;
-import io.jenkins.plugins.sprp.PipelineGenerator;
+import io.jenkins.plugins.sprp.git.GitConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

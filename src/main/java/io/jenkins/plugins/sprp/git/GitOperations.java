@@ -1,4 +1,4 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.git;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import hudson.EnvVars;

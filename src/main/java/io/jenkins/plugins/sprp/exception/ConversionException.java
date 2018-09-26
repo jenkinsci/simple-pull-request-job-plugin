@@ -1,4 +1,4 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.exception;
 
 public class ConversionException extends Exception {
 

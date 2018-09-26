@@ -36,22 +36,25 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Recognizes and builds {@code Jenkinsfile.yaml}.
- * Original code: org.jenkinsci.plugins.workflow.multibranch.YAML_BranchProjectFactory
+ * Original code: org.jenkinsci.plugins.workflow.multibranch.YamlBranchProjectFactory
  */
-public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
-    static final String SCRIPT = "Jenkinsfile.yaml";
-    private String scriptPath = SCRIPT;
+public class YamlBranchProjectFactory extends AbstractWorkflowBranchProjectFactory {
+    private static final Logger LOGGER = Logger.getLogger(YamlBranchProjectFactory.class.getName());
+    static final String YAML_SCRIPT = "Jenkinsfile.yaml";
+    static final String YML_SCRIPT = "Jenkinsfile.yml";
+    private String scriptPath = YAML_SCRIPT;
 
     @DataBoundConstructor
-    public YAML_BranchProjectFactory() {
+    public YamlBranchProjectFactory() {
     }
 
     public Object readResolve() {
         if (this.scriptPath == null) {
-            this.scriptPath = SCRIPT;
+            this.scriptPath = YAML_SCRIPT;
         }
         return this;
     }
@@ -63,7 +66,7 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
     @DataBoundSetter
     public void setScriptPath(String scriptPath) {
         if (StringUtils.isEmpty(scriptPath)) {
-            this.scriptPath = SCRIPT;
+            this.scriptPath = YAML_SCRIPT;
         } else {
             this.scriptPath = scriptPath;
         }
@@ -71,7 +74,7 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
 
     @Override
     protected FlowDefinition createDefinition() {
-        return new YAML_FlowDefinition(scriptPath);
+        return new YamlFlowDefinition(scriptPath);
     }
 
     @Override
@@ -79,22 +82,27 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
         return new SCMSourceCriteria() {
             @Override
             public boolean isHead(SCMSourceCriteria.Probe probe, TaskListener listener) throws IOException {
-                SCMProbeStat stat = probe.stat(scriptPath);
-                switch (stat.getType()) {
-                    case NONEXISTENT:
-                        if (stat.getAlternativePath() != null) {
-                            listener.getLogger().format("      ‘%s’ not found (but found ‘%s’, search is case sensitive)%n", scriptPath, stat.getAlternativePath());
-                        } else {
-                            listener.getLogger().format("      ‘%s’ not found%n", scriptPath);
-                        }
-                        return false;
-                    case DIRECTORY:
-                        listener.getLogger().format("      ‘%s’ found but is a directory not a file%n", scriptPath);
-                        return false;
-                    default:
-                        listener.getLogger().format("      ‘%s’ found%n", scriptPath);
-                        return true;
-
+                while (true) {
+                    SCMProbeStat stat = probe.stat(scriptPath);
+                    switch (stat.getType()) {
+                        case NONEXISTENT:
+                            // Handle default yml case.
+                            if (scriptPath.equals(YAML_SCRIPT)) {
+                                scriptPath = YML_SCRIPT;
+                            }
+                            if (stat.getAlternativePath() != null) {
+                                listener.getLogger().format("‘%s’ not found (but found ‘%s’, search is case sensitive)%n", scriptPath, stat.getAlternativePath());
+                            } else {
+                                listener.getLogger().format("‘%s’ not found%n", scriptPath);
+                            }
+                            return false;
+                        case DIRECTORY:
+                            listener.getLogger().format("‘%s’ found but is a directory not a file%n", scriptPath);
+                            return false;
+                        default:
+                            listener.getLogger().format("‘%s’ found%n", scriptPath);
+                            return isCorrectYAMLFile(scriptPath);
+                    }
                 }
             }
 
@@ -114,8 +122,17 @@ public class YAML_BranchProjectFactory extends AbstractWorkflowBranchProjectFact
     public static class DescriptorImpl extends AbstractWorkflowBranchProjectFactoryDescriptor {
         @Override
         public String getDisplayName() {
-            return "by " + SCRIPT;
+            return "by " + YAML_SCRIPT;
         }
+    }
 
+    private boolean isCorrectYAMLFile(String path) {
+        String[] paths = path.split("/");
+        String filename = paths[paths.length - 1];
+        LOGGER.info("YAML filename: " + filename);
+        String[] exts = filename.split("\\.");
+        String extension = exts[exts.length - 1];
+        LOGGER.info("File extension: " + extension);
+        return !extension.equals("yaml") && !extension.equals("yml");
     }
 }

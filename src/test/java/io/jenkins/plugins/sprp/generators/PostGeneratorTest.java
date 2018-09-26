@@ -1,8 +1,7 @@
 package io.jenkins.plugins.sprp.generators;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.jenkins.plugins.sprp.ConversionException;
-import io.jenkins.plugins.sprp.PipelineGenerator;
+import io.jenkins.plugins.sprp.exception.ConversionException;
 import io.jenkins.plugins.sprp.models.Post;
 import org.junit.Before;
 import org.junit.Rule;

@@ -1,7 +1,8 @@
-package io.jenkins.plugins.sprp;
+package io.jenkins.plugins.sprp.generators;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import io.jenkins.plugins.sprp.exception.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.jenkinsci.plugins.structs.SymbolLookup;

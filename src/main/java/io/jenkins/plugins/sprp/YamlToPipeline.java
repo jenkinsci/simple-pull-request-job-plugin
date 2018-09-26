@@ -1,6 +1,9 @@
 package io.jenkins.plugins.sprp;
 
 import hudson.model.TaskListener;
+import io.jenkins.plugins.sprp.exception.ConversionException;
+import io.jenkins.plugins.sprp.generators.PipelineGenerator;
+import io.jenkins.plugins.sprp.git.GitConfig;
 import io.jenkins.plugins.sprp.models.*;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;

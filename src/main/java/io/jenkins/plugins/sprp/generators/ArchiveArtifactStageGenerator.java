@@ -1,7 +1,6 @@
 package io.jenkins.plugins.sprp.generators;
 
 import hudson.Extension;
-import io.jenkins.plugins.sprp.PipelineGenerator;
 import org.jenkinsci.Symbol;
 
 import javax.annotation.Nonnull;

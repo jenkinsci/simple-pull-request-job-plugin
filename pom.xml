@@ -16,15 +16,9 @@
         <jenkins.version>2.121.2</jenkins.version>
         <java.level>8</java.level>
         <useBeta>true</useBeta>
-        <!-- Other properties you may want to use:
-          ~ jenkins-test-harness.version: Jenkins Test Harness version you use to test the plugin. For Jenkins version >= 1.580.1 use JTH 2.0 or higher.
-          ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
-          ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
-     -->
     </properties>
     <name>Simple Pull Request Job Plugin</name>
     <description>Simple pull request job plugin. This plugin will use YAML to configure a job for pull request.</description>
-    <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
     <licenses>
         <license>
             <name>MIT License</name>
@@ -149,9 +143,6 @@
         <email>gautam.abhishek46@gmail.com</email>
       </developer>
     </developers>
-
-    <!-- Assuming you want to host on @jenkinsci: -->
-    <url>https://wiki.jenkins.io/display/JENKINS/TODO+Plugin</url>
 
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/simple-pull-request-job-plugin.git</connection>
