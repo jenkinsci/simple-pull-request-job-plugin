@@ -129,10 +129,8 @@ public class YamlBranchProjectFactory extends AbstractWorkflowBranchProjectFacto
     private boolean isCorrectYAMLFile(String path) {
         String[] paths = path.split("/");
         String filename = paths[paths.length - 1];
-        LOGGER.info("YAML filename: " + filename);
         String[] exts = filename.split("\\.");
         String extension = exts[exts.length - 1];
-        LOGGER.info("File extension: " + extension);
         return extension.equals("yaml") || extension.equals("yml");
     }
 }
