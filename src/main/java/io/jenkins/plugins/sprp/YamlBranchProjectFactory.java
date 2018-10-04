@@ -133,6 +133,6 @@ public class YamlBranchProjectFactory extends AbstractWorkflowBranchProjectFacto
         String[] exts = filename.split("\\.");
         String extension = exts[exts.length - 1];
         LOGGER.info("File extension: " + extension);
-        return !extension.equals("yaml") && !extension.equals("yml");
+        return extension.equals("yaml") || extension.equals("yml");
     }
 }

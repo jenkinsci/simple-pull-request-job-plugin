@@ -37,24 +37,6 @@ stages:
       - sleep:
           time: 2
       - sleep: 2
-      - junit:
-          testResults: "target/**.xml"
-          allowEmptyResults: true
-          testDataPublishers:
-            - AutomateTestDataPublisher
-            - JunitResultPublisher:
-                urlOverride: "urlOverride"
-
-            - JiraTestDataPublisher:
-                configs:
-                  - SelectableFields:
-                      fieldKey: "SelectableFields key"
-                      value: "SelectableFields value"
-
-                projectKey: "project key"
-                issueType: "issue type"
-                autoRaiseIssue: true
-
 
     post:
       failure:
