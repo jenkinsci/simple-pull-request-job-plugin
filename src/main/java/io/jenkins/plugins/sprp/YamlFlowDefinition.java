@@ -117,7 +117,7 @@ public class YamlFlowDefinition extends FlowDefinition {
         try (SCMFileSystem fs = SCMFileSystem.of(scmSource, head, rev)) {
             if (fs != null) {
                 InputStream yamlInputStream = fs.child(scriptPath).content();
-                listener.getLogger().println("Path of Jenkinsfile.yaml" + fs.child(scriptPath).getPath());
+                listener.getLogger().println("Path of yaml/yml config file: " + fs.child(scriptPath).getPath());
                 YamlToPipeline y = new YamlToPipeline();
                 script = y.generatePipeline(yamlInputStream, gitConfig, listener);
             } else {
