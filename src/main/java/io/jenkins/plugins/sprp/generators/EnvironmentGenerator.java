@@ -4,6 +4,8 @@ import hudson.Extension;
 import io.jenkins.plugins.sprp.models.Credential;
 import io.jenkins.plugins.sprp.models.Environment;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.Map;
 
 @Extension
 @Symbol("environment")
+@Restricted(NoExternalUse.class)
 public class EnvironmentGenerator extends PipelineGenerator<Environment> {
 
     @Nonnull

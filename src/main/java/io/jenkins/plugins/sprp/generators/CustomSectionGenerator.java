@@ -4,6 +4,8 @@ import hudson.Extension;
 import io.jenkins.plugins.sprp.exception.ConversionException;
 import io.jenkins.plugins.sprp.models.CustomPipelineSection;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -16,6 +18,7 @@ import java.util.List;
  */
 @Extension
 @Symbol("custom")
+@Restricted(NoExternalUse.class)
 public class CustomSectionGenerator extends PipelineGenerator<CustomPipelineSection> {
 
     @Nonnull

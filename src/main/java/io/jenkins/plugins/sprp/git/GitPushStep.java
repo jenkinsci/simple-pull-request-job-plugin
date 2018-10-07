@@ -13,6 +13,8 @@ import hudson.model.queue.Tasks;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.steps.*;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collections;
@@ -82,6 +84,7 @@ public class GitPushStep extends Step {
 
     @Symbol("gitPush")
     @Extension
+    @Restricted(NoExternalUse.class)
     public static class DescriptorImpl extends StepDescriptor {
         public DescriptorImpl() {
         }

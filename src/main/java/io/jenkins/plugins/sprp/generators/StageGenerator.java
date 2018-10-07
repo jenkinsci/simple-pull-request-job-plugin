@@ -6,6 +6,8 @@ import io.jenkins.plugins.sprp.models.Agent;
 import io.jenkins.plugins.sprp.models.Stage;
 import io.jenkins.plugins.sprp.models.Step;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 @Extension
 @Symbol("stage")
+@Restricted(NoExternalUse.class)
 public class StageGenerator extends PipelineGenerator<Stage> {
 
     @Nonnull

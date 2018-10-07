@@ -46,6 +46,8 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty;
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -131,6 +133,7 @@ public class YamlFlowDefinition extends FlowDefinition {
     }
 
     @Extension
+    @Restricted(NoExternalUse.class)
     public static class DescriptorImpl extends FlowDefinitionDescriptor {
 
         @Nonnull
