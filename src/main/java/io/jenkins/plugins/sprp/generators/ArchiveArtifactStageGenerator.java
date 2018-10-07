@@ -2,6 +2,8 @@ package io.jenkins.plugins.sprp.generators;
 
 import hudson.Extension;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.List;
 
 @Extension
 @Symbol("archiveArtifactStage")
+@Restricted(NoExternalUse.class)
 public class ArchiveArtifactStageGenerator extends PipelineGenerator<ArrayList<String>> {
 
     @Nonnull

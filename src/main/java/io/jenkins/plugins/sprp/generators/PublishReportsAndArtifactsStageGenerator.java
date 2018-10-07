@@ -4,6 +4,8 @@ import hudson.Extension;
 import io.jenkins.plugins.sprp.models.ArtifactPublishingConfig;
 import io.jenkins.plugins.sprp.models.ReportsAndArtifactsInfo;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.List;
 
 @Extension
 @Symbol("publishReportsAndArtifactsStage")
+@Restricted(NoExternalUse.class)
 public class PublishReportsAndArtifactsStageGenerator extends PipelineGenerator<ReportsAndArtifactsInfo> {
 
     @Nonnull

@@ -15,6 +15,8 @@ import io.jenkins.plugins.sprp.models.Step;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.cps.Snippetizer;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;
@@ -25,6 +27,7 @@ import java.util.Map;
 
 @Extension
 @Symbol("step")
+@Restricted(NoExternalUse.class)
 public class StepGenerator extends PipelineGenerator<Step> {
 
     @Nonnull

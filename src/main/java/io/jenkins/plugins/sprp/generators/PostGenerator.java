@@ -5,6 +5,8 @@ import io.jenkins.plugins.sprp.exception.ConversionException;
 import io.jenkins.plugins.sprp.models.Post;
 import io.jenkins.plugins.sprp.models.Step;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @Extension
 @Symbol("post")
+@Restricted(NoExternalUse.class)
 public class PostGenerator extends PipelineGenerator<Post> {
 
     @Nonnull

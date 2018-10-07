@@ -3,6 +3,8 @@ package io.jenkins.plugins.sprp.generators;
 import hudson.Extension;
 import io.jenkins.plugins.sprp.git.GitConfig;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Extension
 @Symbol("gitPushStage")
+@Restricted(NoExternalUse.class)
 public class GitPushStageGenerator extends PipelineGenerator<GitConfig> {
 
     @Nonnull
